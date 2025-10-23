@@ -3,39 +3,52 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SWITZEA Referat App</title>
+    <title>SWITZEA Kundestatus App</title>
     <style>
         * { box-sizing: border-box; }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #f0f2f5; 
+            background: #F5F1E8; 
             margin: 0; 
             padding: 0;
+            color: #1F2937;
         }
         .app { 
             display: flex; 
             min-height: 100vh; 
+            position: relative;
         }
-
+        
         /* Sidebar */
         .sidebar { 
-            width: 260px; 
-            background: #ffffff; 
-            border-right: 1px solid #e0e0e0; 
+            width: 280px; 
+            background: #FFFFFF; 
+            border-right: 1px solid #E5E7EB; 
             display: flex; 
             flex-direction: column; 
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            box-shadow: 2px 0 8px rgba(44, 95, 125, 0.08);
+            transition: width 0.3s ease, min-width 0.3s ease;
+            position: relative;
+            min-width: 280px;
+        }
+        .sidebar.collapsed {
+            width: 0;
+            min-width: 0;
+            border-right: none;
+            overflow: hidden;
         }
         .sidebar h1 { 
-            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
             color: white; 
             padding: 20px; 
             margin: 0; 
-            font-size: 20px;
+            font-size: 18px;
             text-align: center;
+            line-height: 1.3;
+            font-weight: 600;
         }
-        .sidebar button {
-            background: #1976d2;
+        .sidebar button:not(.toggle-sidebar-btn) {
+            background: #2C5F7D;
             color: white;
             border: none;
             padding: 12px 16px;
@@ -46,181 +59,311 @@
             font-weight: 500;
             transition: all 0.2s;
         }
-        .sidebar button:hover {
-            background: #1565c0;
+        .sidebar button:not(.toggle-sidebar-btn):hover {
+            background: #3A7CA5;
             transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+            box-shadow: 0 4px 12px rgba(44, 95, 125, 0.25);
         }
-        .meetings-list { 
+        .customers-list { 
             flex: 1; 
             overflow-y: auto; 
             padding: 8px 12px; 
         }
-        .meeting { 
-            border: 1px solid #e0e0e0; 
-            padding: 10px; 
-            margin-bottom: 8px; 
+        .customer { 
+            border: 1px solid #E5E7EB; 
+            padding: 12px; 
+            margin-bottom: 10px; 
             border-radius: 6px; 
             cursor: pointer; 
-            background: #fafafa;
+            background: #F9FAFB;
             transition: all 0.2s;
         }
-        .meeting:hover { 
-            background: #e3f2fd; 
-            border-color: #1976d2;
+        .customer:hover { 
+            background: #E8F4F8; 
+            border-color: #3A7CA5;
             transform: translateX(3px);
         }
-        .meeting.active {
-            background: #e3f2fd;
-            border-color: #1976d2;
+        .customer.active {
+            background: #E8F4F8;
+            border-color: #2C5F7D;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(44, 95, 125, 0.12);
+        }
+        .customer-name {
+            font-weight: 600;
+            color: #2C5F7D;
+            font-size: 15px;
+        }
+        .customer-project {
+            font-size: 13px;
+            color: #4B5563;
+            margin: 4px 0;
+        }
+        .customer-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 4px;
             font-weight: 500;
         }
-
-        /* Main Content */
+        .status-active { background: #D1FAE5; color: #059669; }
+        .status-pending { background: #FEF3C7; color: #D97706; }
+        .status-completed { background: #E5E7EB; color: #6B7280; }
+        .status-urgent { background: #FEE2E2; color: #DC2626; }
+        
+        /* Toggle buttons */
+        .toggle-sidebar-btn {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            background: #2C5F7D;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 60px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s;
+            box-shadow: 2px 0 12px rgba(44, 95, 125, 0.25);
+            border-radius: 0 6px 6px 0;
+        }
+        .toggle-sidebar-btn:hover {
+            background: #3A7CA5;
+            width: 35px;
+        }
+        .sidebar:not(.collapsed) ~ * .toggle-sidebar-btn,
+        .sidebar:not(.collapsed) .toggle-sidebar-btn {
+            left: 280px;
+        }
+        
+        .toggle-search-btn {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: #2C5F7D;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 60px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s;
+            box-shadow: -2px 0 12px rgba(44, 95, 125, 0.25);
+            border-radius: 6px 0 0 6px;
+        }
+        .toggle-search-btn:hover {
+            background: #3A7CA5;
+            width: 35px;
+        }
+        .right-panel:not(.collapsed) ~ .toggle-search-btn {
+            right: 340px;
+        }
+        
+        /* Main content */
         .main { 
             flex: 1; 
             padding: 20px; 
-            background: #f0f2f5; 
+            background: #F5F1E8; 
             display: flex; 
             flex-direction: row; 
             gap: 20px;
+            transition: all 0.3s ease;
         }
-        #meetingContent { 
-            flex: 2; 
+        #customerContent { 
+            flex: 1; 
             background: white;
             padding: 24px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(44, 95, 125, 0.08);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
         }
-        .meeting-header { 
-            border-bottom: 3px solid #1976d2; 
+        .customer-header { 
+            border-bottom: 3px solid #2C5F7D; 
             margin-bottom: 20px; 
             padding-bottom: 12px;
         }
-        .meeting-header h2 {
+        .customer-header h2 {
             margin: 0 0 8px 0;
-            color: #1976d2;
+            color: #2C5F7D;
+            font-size: 26px;
+            font-weight: 700;
         }
-        .meeting-header p {
+        .customer-header p {
             margin: 0 0 8px 0;
-            color: #666;
+            color: #4B5563;
         }
-
-        /* Metadata fields */
-        .metadata-fields {
-            background: #f8f9fa;
-            padding: 16px;
+        
+        .customer-info-fields {
+            background: #F9FAFB;
+            padding: 18px;
             border-radius: 6px;
             margin-bottom: 20px;
-            border-left: 4px solid #1976d2;
+            border-left: 4px solid #2C5F7D;
         }
-        .metadata-fields label {
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .info-row-full {
+            display: block;
+            margin-bottom: 15px;
+        }
+        .customer-info-fields label {
             display: block;
             font-weight: 600;
-            color: #333;
+            color: #1F2937;
             margin-bottom: 6px;
             font-size: 14px;
         }
-        .metadata-fields input,
-        .metadata-fields textarea {
+        .customer-info-fields input,
+        .customer-info-fields select {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #D1D5DB;
             border-radius: 4px;
             font-family: inherit;
             font-size: 14px;
-            margin-bottom: 12px;
+            background: white;
         }
-        .metadata-fields textarea {
-            min-height: 60px;
-            resize: vertical;
-        }
-        .metadata-fields input:focus,
-        .metadata-fields textarea:focus {
+        .customer-info-fields input:focus,
+        .customer-info-fields select:focus {
             outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+            border-color: #3A7CA5;
+            box-shadow: 0 0 0 3px rgba(58, 124, 165, 0.1);
         }
-
-        /* Agenda input section */
-        .agenda-input-section {
-            background: #fff9e6;
-            padding: 16px;
+        
+        .timeline-section {
+            background: #FFF5F0;
+            padding: 18px;
             border-radius: 6px;
             margin-bottom: 20px;
-            border-left: 4px solid #ffa726;
+            border-left: 4px solid #E87461;
         }
-        .agenda-input-section label {
-            display: block;
+        .timeline-section h3 {
+            margin: 0 0 15px 0;
+            color: #B33A2C;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 14px;
         }
-        .agenda-input-section textarea {
+        
+        .add-entry-form {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 2px dashed #FDB4A5;
+        }
+        .add-entry-form input[type="date"],
+        .add-entry-form input[type="text"] {
             width: 100%;
-            min-height: 120px;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #D1D5DB;
             border-radius: 4px;
             font-family: inherit;
             font-size: 14px;
             margin-bottom: 10px;
         }
-        .agenda-input-section button {
-            background: #ffa726;
-            margin: 0;
+        .add-entry-form input[type="text"] {
+            font-weight: 600;
         }
-        .agenda-input-section button:hover {
-            background: #fb8c00;
-        }
-        .agenda-input-section .help-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 8px;
-            font-style: italic;
-        }
-
-        /* Agenda Points */
-        .agenda-point { 
-            background: #f8f9fa; 
-            padding: 16px; 
-            margin-bottom: 14px; 
-            border-left: 4px solid #1976d2; 
-            border-radius: 6px; 
-        }
-        .agenda-point h4 {
-            margin: 0 0 10px 0;
-            color: #333;
-        }
-        textarea { 
-            width: 100%; 
-            min-height: 80px; 
-            border: 1px solid #ddd; 
-            border-radius: 6px; 
-            padding: 10px; 
+        .add-entry-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #D1D5DB;
+            border-radius: 4px;
             font-family: inherit;
             font-size: 14px;
+            line-height: 1.5;
             resize: vertical;
-            transition: border 0.2s;
+            margin-bottom: 10px;
         }
-        textarea:focus {
+        .add-entry-form input:focus,
+        .add-entry-form textarea:focus {
             outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+            border-color: #E87461;
+            box-shadow: 0 0 0 3px rgba(232, 116, 97, 0.1);
         }
-
-        /* Highlight */
-        .highlight {
-            background-color: yellow;
-            font-weight: bold;
-            padding: 2px 4px;
-            border-radius: 3px;
+        .add-entry-form button {
+            background: #E87461;
+            margin: 0;
         }
-
-        /* Buttons */
+        .add-entry-form button:hover {
+            background: #D25E4D;
+        }
+        
+        .timeline-entries {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .timeline-entry {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #E87461;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .timeline-entry:hover {
+            box-shadow: 0 4px 12px rgba(232, 116, 97, 0.15);
+            transform: translateX(3px);
+        }
+        .timeline-entry-date {
+            font-weight: 700;
+            color: #B33A2C;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        .timeline-entry-headline {
+            font-weight: 700;
+            color: #8B2E22;
+            font-size: 16px;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        .timeline-entry-text {
+            color: #1F2937;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .timeline-entry-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #DC2626;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 18px;
+            margin: 0;
+        }
+        .timeline-entry-delete:hover {
+            background: #FEE2E2;
+            border-radius: 4px;
+        }
+        
         button { 
-            background-color: #1976d2; 
+            background-color: #2C5F7D; 
             color: white; 
             border: none; 
             padding: 10px 18px; 
@@ -232,37 +375,44 @@
             transition: all 0.2s;
         }
         button:hover { 
-            background-color: #1565c0; 
-            box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3);
+            background-color: #3A7CA5; 
+            box-shadow: 0 4px 12px rgba(44, 95, 125, 0.25);
         }
         button:active {
             transform: scale(0.98);
         }
-        .btn-export {
-            background: #2e7d32;
-        }
-        .btn-export:hover {
-            background: #1b5e20;
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 13px;
         }
         .btn-pdf {
-            background: #c62828;
+            background: #DC2626;
         }
         .btn-pdf:hover {
-            background: #b71c1c;
+            background: #B91C1C;
         }
-
-        /* Right Panel */
+        
         .right-panel { 
             width: 340px; 
             background: white; 
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(44, 95, 125, 0.08);
+            transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+            position: relative;
+            min-width: 340px;
+        }
+        .right-panel.collapsed {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            overflow: hidden;
         }
         .right-panel h3 {
             margin: 0 0 16px 0;
-            color: #333;
+            color: #1F2937;
             font-size: 18px;
+            font-weight: 600;
         }
         .search-box { 
             margin-bottom: 16px; 
@@ -271,277 +421,129 @@
             width: 100%; 
             padding: 10px; 
             border-radius: 6px; 
-            border: 1px solid #ddd; 
+            border: 1px solid #D1D5DB; 
             font-size: 14px;
             transition: border 0.2s;
         }
         .search-box input:focus {
             outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+            border-color: #3A7CA5;
+            box-shadow: 0 0 0 3px rgba(58, 124, 165, 0.1);
         }
         #searchResults {
             max-height: calc(100vh - 240px);
             overflow-y: auto;
         }
-
-        /* Search Result Item */
+        
         .search-result {
-            border: 1px solid #e0e0e0;
+            border: 1px solid #E5E7EB;
             padding: 12px;
             margin-bottom: 10px;
             border-radius: 6px;
-            background: #fafafa;
+            background: #F9FAFB;
             cursor: pointer;
             transition: all 0.2s;
         }
         .search-result:hover {
-            background: #e3f2fd;
-            border-color: #1976d2;
+            background: #E8F4F8;
+            border-color: #3A7CA5;
             transform: translateX(3px);
         }
         .search-result-title {
             font-weight: 600;
-            color: #1976d2;
+            color: #2C5F7D;
             margin-bottom: 4px;
         }
-        .search-result-location {
+        .search-result-project {
             font-size: 12px;
-            color: #666;
+            color: #6B7280;
             margin-bottom: 6px;
         }
         .search-result-snippet {
             font-size: 13px;
-            color: #333;
+            color: #1F2937;
             line-height: 1.4;
         }
-
-        /* Empty State */
+        
+        .highlight {
+            background-color: #FEF3C7;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #92400E;
+        }
+        
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: #999;
+            color: #9CA3AF;
         }
         .empty-state h2 {
-            color: #666;
+            color: #6B7280;
         }
-
-        /* Print/PDF Styles - FORBEDRET DESIGN */
-        .print-view {
+        
+        .modal {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 95, 125, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
-
-        @media print {
-            body { 
-                background: white; 
-                margin: 0;
-                padding: 0;
-            }
-            .app, .sidebar, .right-panel, button, .no-print, .agenda-input-section { 
-                display: none !important; 
-            }
-            .print-view {
-                display: block !important;
-                padding: 30px;
-                font-family: 'Calibri', 'Arial', sans-serif;
-                max-width: 800px;
-                margin: 0 auto;
-                color: #333;
-            }
-
-            /* ELEGANT HEADER DESIGN */
-            .print-header {
-                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-                padding: 30px;
-                border-radius: 12px;
-                text-align: center;
-                margin-bottom: 30px;
-                border: 3px solid #1976d2;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            }
-            .print-logo {
-                font-size: 32px;
-                font-weight: 800;
-                color: #0d47a1;
-                margin-bottom: 15px;
-                letter-spacing: 2px;
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .print-title {
-                color: #1976d2;
-                font-size: 28px;
-                margin: 15px 0;
-                font-weight: 700;
-            }
-
-            /* METADATA SECTION - PROFESSIONEL GRID */
-            .print-metadata {
-                background: #f8fbfd;
-                padding: 25px;
-                border-radius: 10px;
-                margin: 25px 0;
-                border-left: 6px solid #1976d2;
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 20px;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            }
-            .print-metadata-full {
-                grid-column: 1 / -1;
-            }
-            .print-metadata-item {
-                background: white;
-                padding: 15px;
-                border-radius: 8px;
-                border: 1px solid #e3f2fd;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            }
-            .print-metadata-label {
-                font-weight: 700;
-                color: #1565c0;
-                font-size: 14px;
-                margin-bottom: 8px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-            .print-metadata-value {
-                color: #333;
-                font-size: 16px;
-                line-height: 1.4;
-            }
-
-            /* AGENDA OVERVIEW - ELEGANT LISTE */
-            .print-agenda-overview {
-                background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-                padding: 25px;
-                border-radius: 10px;
-                margin: 30px 0;
-                border-left: 6px solid #ffa726;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            }
-            .print-agenda-overview h3 {
-                color: #e65100;
-                font-size: 22px;
-                margin-bottom: 20px;
-                font-weight: 700;
-                text-align: center;
-            }
-            .print-agenda-list {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                display: grid;
-                gap: 12px;
-            }
-            .print-agenda-list li {
-                background: white;
-                padding: 12px 18px;
-                border-radius: 6px;
-                border-left: 4px solid #ff9800;
-                font-weight: 600;
-                color: #bf360c;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-
-            /* SECTION DIVIDER */
-            .print-section-divider {
-                text-align: center;
-                margin: 40px 0;
-                position: relative;
-            }
-            .print-section-divider::before {
-                content: '';
-                position: absolute;
-                top: 50%;
-                left: 0;
-                right: 0;
-                height: 2px;
-                background: linear-gradient(90deg, transparent, #1976d2, transparent);
-            }
-            .print-section-title {
-                background: white;
-                color: #1565c0;
-                font-size: 24px;
-                font-weight: 700;
-                padding: 0 25px;
-                display: inline-block;
-            }
-
-            /* AGENDA ITEMS - MODERNE CARDS */
-            .print-agenda-item {
-                margin-bottom: 30px;
-                page-break-inside: avoid;
-                background: white;
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-                border: 1px solid #e3f2fd;
-            }
-            .print-agenda-title {
-                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-                padding: 18px 25px;
-                font-weight: 700;
-                font-size: 18px;
-                color: #0d47a1;
-                border-bottom: 3px solid #1976d2;
-            }
-            .print-agenda-content {
-                padding: 25px;
-                white-space: pre-wrap;
-                line-height: 1.7;
-                min-height: 50px;
-                color: #444;
-                font-size: 15px;
-            }
-
-            /* ELEGANT FOOTER */
-            .print-footer {
-                margin-top: 50px;
-                padding: 25px;
-                border-top: 3px solid #e3f2fd;
-                text-align: center;
-                background: linear-gradient(135deg, #f8fbfd 0%, #e3f2fd 100%);
-                border-radius: 10px;
-            }
-            .print-footer-content {
-                color: #1565c0;
-                font-weight: 600;
-                font-size: 14px;
-            }
-            .print-footer-date {
-                color: #666;
-                font-size: 12px;
-                margin-top: 8px;
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(44, 95, 125, 0.3);
+        }
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        .modal-header h3 {
+            margin: 0;
+            color: #2C5F7D;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #9CA3AF;
+            margin: 0;
+            padding: 0;
+        }
+        .modal-close:hover {
+            color: #4B5563;
+        }
+        
+        @media (max-width: 1024px) {
+            .info-row {
+                grid-template-columns: 1fr;
             }
         }
-
-        /* Responsive */
+        
         @media (max-width: 900px) {
             .app { flex-direction: column; }
-            .sidebar { 
-                width: 100%; 
-                max-height: 200px;
-                border-right: none;
-                border-bottom: 1px solid #e0e0e0;
-            }
-            .main { 
-                flex-direction: column; 
-                padding: 16px;
-            }
-            #meetingContent { 
-                padding: 16px;
-            }
-            .right-panel { 
-                width: 100%; 
-                margin-top: 16px;
-            }
-
-            /* Print responsive */
-            @media print {
-                .print-metadata {
-                    grid-template-columns: 1fr;
-                }
-            }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #E5E7EB; min-width: 100%; }
+            .sidebar.collapsed { height: 0; width: 100%; }
+            .main { flex-direction: column; padding: 16px; }
+            #customerContent { padding: 16px; max-height: none; }
+            .right-panel { width: 100%; margin-top: 16px; min-width: 100%; }
+            .right-panel.collapsed { height: 0; width: 100%; }
+            .info-row { grid-template-columns: 1fr; }
+            .modal-content { width: 95%; padding: 20px; }
+            .toggle-sidebar-btn, .toggle-search-btn { display: none; }
         }
     
         /* SWITZEA Navigation Bar */
@@ -630,398 +632,348 @@
     </div>
 
     
+    <button class="toggle-sidebar-btn" id="toggleSidebar">◀</button>
+    <button class="toggle-search-btn" id="toggleSearch">▶</button>
+    
     <div class="app">
-        <!-- Left Sidebar -->
-        <div class="sidebar">
-            <h1>📋 SWITZEA Referater</h1>
-            <button onclick="newMeeting()">➕ Opret nyt referat</button>
-            <div class="meetings-list" id="meetingsList"></div>
+        <div class="sidebar" id="sidebar">
+            <h1>👥 SWITZEA Kundestatus</h1>
+            <button id="newCustomerBtn">➕ Opret ny kunde</button>
+            <div class="customers-list" id="customersList"></div>
         </div>
-
-        <!-- Main Content Area -->
+        
         <div class="main">
-            <div id="meetingContent">
+            <div id="customerContent">
                 <div class="empty-state">
-                    <h2>Velkommen til SWITZEA Referat App</h2>
-                    <p>Opret et nyt referat for at komme i gang, eller vælg et eksisterende referat fra sidebaren.</p>
+                    <h2>Velkommen til SWITZEA Kundestatus</h2>
+                    <p>Opret en ny kunde for at komme i gang, eller vælg en eksisterende kunde fra sidebaren.</p>
                 </div>
             </div>
-
-            <!-- Right Panel with Search -->
-            <div class="right-panel">
-                <h3>🔍 Søg i referater</h3>
+            
+            <div class="right-panel" id="rightPanel">
+                <h3>🔍 Søg i kunder</h3>
                 <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Søg efter ord eller sætninger..." />
+                    <input type="text" id="searchInput" placeholder="Søg efter kunde, projekt eller noter..." />
                 </div>
                 <div id="searchResults"></div>
             </div>
         </div>
     </div>
-
-    <!-- Hidden print view for PDF -->
-    <div id="printView" class="print-view"></div>
+    
+    <div class="modal" id="customerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Ny Kunde</h3>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="customerForm">
+                <div class="info-row">
+                    <div>
+                        <label>Kunde navn:</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div>
+                        <label>Kontaktperson:</label>
+                        <input type="text" id="contactPerson">
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div>
+                        <label>Email:</label>
+                        <input type="email" id="email">
+                    </div>
+                    <div>
+                        <label>Telefon:</label>
+                        <input type="tel" id="phone">
+                    </div>
+                </div>
+                <div class="info-row-full">
+                    <label>Projekt/Sag:</label>
+                    <input type="text" id="project" required>
+                </div>
+                <div class="info-row">
+                    <div>
+                        <label>Status:</label>
+                        <select id="status">
+                            <option value="active">Aktiv</option>
+                            <option value="pending">Afventer svar</option>
+                            <option value="completed">Afsluttet</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Næste opfølgning:</label>
+                        <input type="date" id="followUpDate">
+                    </div>
+                </div>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" id="cancelModalBtn" style="background: #6B7280;">Annuller</button>
+                    <button type="submit">Gem kunde</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
-        // Data storage
-        let meetings = [];
-        let currentMeetingId = null;
-        let currentSearchTerm = '';
+        let customers = [];
+        let currentCustomerId = null;
 
-        // Create new meeting
-        function newMeeting() {
+        function formatDanishDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return day + '-' + month + '-' + year;
+        }
+
+        function updateToggleButtons() {
+            const sidebar = document.getElementById('sidebar');
+            const panel = document.getElementById('rightPanel');
+            const sidebarBtn = document.getElementById('toggleSidebar');
+            const searchBtn = document.getElementById('toggleSearch');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                sidebarBtn.style.left = '0';
+            } else {
+                sidebarBtn.style.left = '280px';
+            }
+            
+            if (panel.classList.contains('collapsed')) {
+                searchBtn.style.right = '0';
+            } else {
+                searchBtn.style.right = '340px';
+            }
+        }
+
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const btn = document.getElementById('toggleSidebar');
+            sidebar.classList.toggle('collapsed');
+            btn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+            updateToggleButtons();
+        });
+
+        document.getElementById('toggleSearch').addEventListener('click', function() {
+            const panel = document.getElementById('rightPanel');
+            const btn = document.getElementById('toggleSearch');
+            panel.classList.toggle('collapsed');
+            btn.textContent = panel.classList.contains('collapsed') ? '◀' : '▶';
+            updateToggleButtons();
+        });
+
+        function newCustomer() {
+            document.getElementById('modalTitle').textContent = 'Ny Kunde';
+            document.getElementById('customerForm').reset();
+            const nextWeek = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+            document.getElementById('followUpDate').value = nextWeek;
+            document.getElementById('customerModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('customerModal').style.display = 'none';
+        }
+
+        document.getElementById('newCustomerBtn').addEventListener('click', newCustomer);
+        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+        document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+
+        document.getElementById('customerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveNewCustomer();
+        });
+
+        function saveNewCustomer() {
             const id = Date.now();
-            const today = new Date().toISOString().split('T')[0];
-            const data = {
-                id,
-                title: 'Statusmøde ' + new Date().toLocaleDateString('da-DK'),
-                date: today,
-                participants: '',
-                referent: '',
-                agenda: [
-                    { title: 'Punkt 1: Dagsorden', content: '' },
-                    { title: 'Punkt 2: Projekter – status og opgaver', content: '' },
-                    { title: 'Punkt 3: Effektivisering af tilbudsgivning', content: '' },
-                    { title: 'Punkt 4: Program/system for SWITZEA ApS', content: '' },
-                    { title: 'Punkt 5: Visitkort og profiltøj', content: '' },
-                    { title: 'Punkt 6: Eventuelt', content: '' },
-                    { title: 'Punkt 7: Næste statusmøde', content: '' }
-                ],
+            const customer = {
+                id: id,
+                customerName: document.getElementById('customerName').value,
+                contactPerson: document.getElementById('contactPerson').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                project: document.getElementById('project').value,
+                status: document.getElementById('status').value,
+                followUpDate: document.getElementById('followUpDate').value,
+                lastContact: new Date().toISOString().split('T')[0],
+                statusTimeline: [],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
-            meetings.unshift(data);
-            saveMeetingsLocal();
-            renderMeetings();
-            openMeeting(id);
+
+            customers.unshift(customer);
+            saveCustomersLocal();
+            renderCustomers();
+            closeModal();
+            openCustomer(id);
         }
 
-        // Parse agenda from pasted text
-        function parseAgendaFromText(text) {
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            const agenda = [];
-
-            lines.forEach(line => {
-                const match = line.match(/^(\d+|punkt\s*\d+)[.:)\-\s]*/i);
-                if (match) {
-                    const title = line.replace(/^(\d+|punkt\s*\d+)[.:)\-\s]*/i, '').trim();
-                    if (title) {
-                        agenda.push({
-                            title: title,
-                            content: ''
-                        });
-                    }
-                } else if (line.length > 0) {
-                    agenda.push({
-                        title: line,
-                        content: ''
-                    });
-                }
-            });
-
-            return agenda.length > 0 ? agenda : null;
-        }
-
-        // Apply parsed agenda to current meeting
-        function applyParsedAgenda() {
-            const agendaInput = document.getElementById('agendaInputText');
-            const text = agendaInput.value.trim();
-
-            if (!text) {
-                alert('Indtast venligst en dagsorden');
-                return;
-            }
-
-            const parsedAgenda = parseAgendaFromText(text);
-
-            if (!parsedAgenda || parsedAgenda.length === 0) {
-                alert('Kunne ikke parse dagsordenen. Prøv at formatere det med numre (fx "1. Punkt", "2. Andet punkt")');
-                return;
-            }
-
-            const meeting = meetings.find(m => m.id === currentMeetingId);
-            if (!meeting) return;
-
-            meeting.agenda = parsedAgenda;
-            saveMeetingsLocal();
-
-            openMeeting(currentMeetingId);
-
-            alert(`✅ Dagsorden opdateret med ${parsedAgenda.length} punkter!`);
-        }
-
-        // Render meetings in left sidebar
-        function renderMeetings() {
-            const listDiv = document.getElementById('meetingsList');
+        function renderCustomers() {
+            const listDiv = document.getElementById('customersList');
             listDiv.innerHTML = '';
-
-            if (meetings.length === 0) {
-                listDiv.innerHTML = '<p style="padding: 10px; color: #999; text-align: center;">Ingen referater endnu</p>';
+            
+            if (customers.length === 0) {
+                listDiv.innerHTML = '<p style="padding: 10px; color: #9CA3AF; text-align: center;">Ingen kunder endnu</p>';
                 return;
             }
-
-            meetings.forEach(m => {
+            
+            customers.forEach(function(c) {
                 const div = document.createElement('div');
-                div.className = 'meeting';
-                if (m.id === currentMeetingId) {
-                    div.classList.add('active');
-                }
-                div.innerHTML = `<strong>${m.title}</strong><br><small style="color: #666;">${m.date}</small>`;
-                div.onclick = () => openMeeting(m.id);
+                div.className = 'customer';
+                if (c.id === currentCustomerId) div.classList.add('active');
+                
+                let statusClass = 'status-active';
+                if (c.status === 'pending') statusClass = 'status-pending';
+                else if (c.status === 'completed') statusClass = 'status-completed';
+                else if (c.status === 'urgent') statusClass = 'status-urgent';
+                
+                const statusText = {
+                    'active': 'Aktiv',
+                    'pending': 'Afventer',
+                    'completed': 'Afsluttet',
+                    'urgent': 'Urgent'
+                }[c.status] || c.status;
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'customer-name';
+                nameDiv.textContent = c.customerName;
+                
+                const projectDiv = document.createElement('div');
+                projectDiv.className = 'customer-project';
+                projectDiv.textContent = c.project;
+                
+                const statusSpan = document.createElement('span');
+                statusSpan.className = 'customer-status ' + statusClass;
+                statusSpan.textContent = statusText;
+                
+                div.appendChild(nameDiv);
+                div.appendChild(projectDiv);
+                div.appendChild(statusSpan);
+                div.addEventListener('click', function() { openCustomer(c.id); });
                 listDiv.appendChild(div);
             });
         }
 
-        // Open and display a meeting
-        function openMeeting(id, highlightPointIndex = null) {
-            currentMeetingId = id;
-            const meeting = meetings.find(x => x.id === id);
-            if (!meeting) return;
-
-            if (meeting.participants === undefined) meeting.participants = '';
-            if (meeting.referent === undefined) meeting.referent = '';
-
-            const contentDiv = document.getElementById('meetingContent');
-            contentDiv.innerHTML = `
-                <div class='meeting-header'>
-                    <h2>${meeting.title}</h2>
-                    <p>📅 ${meeting.date}</p>
-                </div>
-
-                <div class="metadata-fields">
-                    <label>👥 Deltagere:</label>
-                    <textarea id="participantsField" placeholder="Indtast navne på deltagere, fx: Anna, Bo, Dorthe">${meeting.participants || ''}</textarea>
-
-                    <label>✍️ Referent:</label>
-                    <input type="text" id="referentField" placeholder="Navn på referent" value="${meeting.referent || ''}" />
-                </div>
-
-                <div class="agenda-input-section">
-                    <label>📝 Indsæt ny dagsorden (overskriver eksisterende punkter):</label>
-                    <textarea id="agendaInputText" placeholder="Indsæt dagsorden her, fx:\n1. Velkommen\n2. Status på projekter\n3. Eventuelt"></textarea>
-                    <button onclick="applyParsedAgenda()">🔄 Opdater dagsorden</button>
-                    <div class="help-text">Tip: Formater med numre (1., 2., etc.) eller "Punkt 1:", "Punkt 2:" for bedst resultat</div>
-                </div>
-            `;
-
-            meeting.agenda.forEach((point, i) => {
-                const div = document.createElement('div');
-                div.className = 'agenda-point';
-                div.id = 'point-' + i;
-
-                if (highlightPointIndex === i) {
-                    div.style.background = '#fff9c4';
-                    div.style.borderLeft = '4px solid #fbc02d';
-                }
-
-                div.innerHTML = `
-                    <h4>${point.title}</h4>
-                    <textarea id='a${i}' placeholder='Skriv referat indhold her...'>${point.content}</textarea>
-                `;
-                contentDiv.appendChild(div);
-            });
-
+        function openCustomer(id) {
+            currentCustomerId = id;
+            const customer = customers.find(function(c) { return c.id === id; });
+            if (!customer) return;
+            
+            if (!customer.statusTimeline) customer.statusTimeline = [];
+            
+            const contentDiv = document.getElementById('customerContent');
+            contentDiv.innerHTML = '';
+            
+            const header = document.createElement('div');
+            header.className = 'customer-header';
+            const h2 = document.createElement('h2');
+            h2.textContent = customer.customerName;
+            const p = document.createElement('p');
+            p.textContent = '📋 ' + customer.project;
+            header.appendChild(h2);
+            header.appendChild(p);
+            contentDiv.appendChild(header);
+            
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'customer-info-fields';
+            infoDiv.innerHTML = '<div class="info-row">' +
+                '<div><label>👤 Kontaktperson:</label><input type="text" id="contactPersonField" value="' + (customer.contactPerson || '') + '" /></div>' +
+                '<div><label>📧 Email:</label><input type="email" id="emailField" value="' + (customer.email || '') + '" /></div>' +
+                '</div>' +
+                '<div class="info-row">' +
+                '<div><label>📱 Telefon:</label><input type="tel" id="phoneField" value="' + (customer.phone || '') + '" /></div>' +
+                '<div><label>📊 Status:</label><select id="statusField">' +
+                '<option value="active"' + (customer.status === 'active' ? ' selected' : '') + '>Aktiv</option>' +
+                '<option value="pending"' + (customer.status === 'pending' ? ' selected' : '') + '>Afventer svar</option>' +
+                '<option value="completed"' + (customer.status === 'completed' ? ' selected' : '') + '>Afsluttet</option>' +
+                '<option value="urgent"' + (customer.status === 'urgent' ? ' selected' : '') + '>Urgent</option>' +
+                '</select></div>' +
+                '</div>' +
+                '<div class="info-row">' +
+                '<div><label>📅 Sidste kontakt:</label><input type="date" id="lastContactField" value="' + (customer.lastContact || '') + '" /></div>' +
+                '<div><label>⏰ Næste opfølgning:</label><input type="date" id="followUpDateField" value="' + (customer.followUpDate || '') + '" /></div>' +
+                '</div>' +
+                '<div class="info-row-full"><label>📋 Projekt/Sag:</label><input type="text" id="projectField" value="' + (customer.project || '') + '" /></div>';
+            contentDiv.appendChild(infoDiv);
+            
+            const statusSection = document.createElement('div');
+            statusSection.className = 'timeline-section';
+            statusSection.innerHTML = '<h3>📝 Status<button class="btn-small" id="addStatusBtn">➕ Tilføj</button></h3>' +
+                '<div class="add-entry-form" id="statusForm" style="display: none;">' +
+                '<input type="date" id="statusDate" value="' + new Date().toISOString().split('T')[0] + '" />' +
+                '<input type="text" id="statusHeadline" placeholder="Overskrift" />' +
+                '<textarea id="statusText" placeholder="Beskriv hvad der skete..."></textarea>' +
+                '<button id="saveStatusBtn">Gem status</button>' +
+                '</div>' +
+                '<div class="timeline-entries" id="statusTimeline"></div>';
+            contentDiv.appendChild(statusSection);
+            
             const buttonContainer = document.createElement('div');
             buttonContainer.style.marginTop = '20px';
-            buttonContainer.className = 'no-print';
-
+            
             const saveBtn = document.createElement('button');
-            saveBtn.textContent = '💾 Gem referat';
-            saveBtn.onclick = () => saveMeeting(meeting.id);
-
-            const exportWordBtn = document.createElement('button');
-            exportWordBtn.textContent = '📄 Download Word';
-            exportWordBtn.className = 'btn-export';
-            exportWordBtn.onclick = () => exportToWord(meeting.id);
-
+            saveBtn.textContent = '💾 Gem kundestatus';
+            saveBtn.addEventListener('click', function() { saveCustomerStatus(customer.id); });
+            
             const exportPdfBtn = document.createElement('button');
             exportPdfBtn.textContent = '📑 Download PDF';
             exportPdfBtn.className = 'btn-pdf';
-            exportPdfBtn.onclick = () => exportToPDF(meeting.id);
-
+            exportPdfBtn.addEventListener('click', function() { exportToPDF(customer); });
+            
             const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = '🗑️ Slet referat';
-            deleteBtn.style.background = '#d32f2f';
-            deleteBtn.onclick = () => deleteMeeting(meeting.id);
-
+            deleteBtn.textContent = '🗑️ Slet kunde';
+            deleteBtn.style.background = '#DC2626';
+            deleteBtn.addEventListener('click', function() { deleteCustomer(customer.id); });
+            
             buttonContainer.appendChild(saveBtn);
-            buttonContainer.appendChild(exportWordBtn);
             buttonContainer.appendChild(exportPdfBtn);
             buttonContainer.appendChild(deleteBtn);
             contentDiv.appendChild(buttonContainer);
-
-            if (highlightPointIndex !== null) {
-                setTimeout(() => {
-                    const element = document.getElementById('point-' + highlightPointIndex);
-                    if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
-            }
-
-            renderMeetings();
+            
+            document.getElementById('addStatusBtn').addEventListener('click', toggleStatusForm);
+            document.getElementById('saveStatusBtn').addEventListener('click', addStatusEntry);
+            
+            renderStatusTimeline(customer);
+            renderCustomers();
         }
 
-        // Export to Word - FORBEDRET DESIGN
-        function exportToWord(id) {
-            saveMeeting(id);
+        function exportToPDF(customer) {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(generatePrintHTML(customer));
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(function() {
+                printWindow.print();
+            }, 250);
+        }
 
-            const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
+        function generatePrintHTML(customer) {
+            let statusHTML = '';
+            if (customer.statusTimeline && customer.statusTimeline.length > 0) {
+                customer.statusTimeline.forEach(function(entry) {
+                    statusHTML += '<div style="background: white; padding: 15px; margin-bottom: 12px; border-left: 4px solid #E87461; page-break-inside: avoid;">' +
+                        '<div style="font-weight: 700; color: #B33A2C; font-size: 12pt; margin-bottom: 6px;">' + formatDanishDate(entry.date) + '</div>' +
+                        '<div style="font-weight: 700; color: #8B2E22; font-size: 14pt; margin-bottom: 8px; line-height: 1.3;">' + entry.headline + '</div>' +
+                        '<div style="color: #1F2937; font-size: 11pt; line-height: 1.5; white-space: pre-wrap;">' + entry.text + '</div>' +
+                        '</div>';
+                });
+            } else {
+                statusHTML = '<p style="text-align: center; color: #9CA3AF; padding: 20px;">Ingen status-opdateringer</p>';
+            }
 
-            const wordContent = `
-                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head>
-                    <meta charset='utf-8'>
-                    <title>${meeting.title}</title>
-                    <style>
-                        body { 
-                            font-family: 'Calibri', 'Arial', sans-serif; 
-                            line-height: 1.6;
-                            max-width: 800px;
-                            margin: 30px auto;
-                            padding: 30px;
-                            color: #333;
-                        }
-                        .header {
-                            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-                            padding: 30px;
-                            border-radius: 12px;
-                            text-align: center;
-                            margin-bottom: 30px;
-                            border: 3px solid #1976d2;
-                        }
-                        .logo {
-                            font-size: 32px;
-                            font-weight: 800;
-                            color: #0d47a1;
-                            margin-bottom: 15px;
-                            letter-spacing: 2px;
-                        }
-                        h1 {
-                            color: #1976d2;
-                            font-size: 28px;
-                            margin: 15px 0;
-                            font-weight: 700;
-                        }
-                        .metadata {
-                            background: #f8fbfd;
-                            padding: 25px;
-                            border-radius: 10px;
-                            margin: 25px 0;
-                            border-left: 6px solid #1976d2;
-                            display: grid;
-                            grid-template-columns: 1fr 1fr;
-                            gap: 20px;
-                        }
-                        .metadata-full {
-                            grid-column: 1 / -1;
-                        }
-                        .metadata-item {
-                            background: white;
-                            padding: 15px;
-                            border-radius: 8px;
-                            border: 1px solid #e3f2fd;
-                        }
-                        .metadata-label {
-                            font-weight: 700;
-                            color: #1565c0;
-                            font-size: 14px;
-                            margin-bottom: 8px;
-                            text-transform: uppercase;
-                            letter-spacing: 0.5px;
-                        }
-                        .metadata-value {
-                            color: #333;
-                            font-size: 16px;
-                            line-height: 1.4;
-                        }
-                        .agenda-overview {
-                            background: linear-gradient(135deg, #fff8e1, #ffecb3);
-                            padding: 25px;
-                            border-radius: 10px;
-                            margin: 30px 0;
-                            border-left: 6px solid #ffa726;
-                        }
-                        .agenda-overview h3 {
-                            color: #e65100;
-                            font-size: 22px;
-                            margin-bottom: 20px;
-                            font-weight: 700;
-                            text-align: center;
-                        }
-                        .agenda-list {
-                            list-style: none;
-                            padding: 0;
-                            margin: 0;
-                            display: grid;
-                            gap: 12px;
-                        }
-                        .agenda-list li {
-                            background: white;
-                            padding: 12px 18px;
-                            border-radius: 6px;
-                            border-left: 4px solid #ff9800;
-                            font-weight: 600;
-                            color: #bf360c;
-                        }
-                        .section-divider {
-                            text-align: center;
-                            margin: 40px 0;
-                            position: relative;
-                        }
-                        .section-title {
-                            color: #1565c0;
-                            font-size: 24px;
-                            font-weight: 700;
-                            background: white;
-                            padding: 0 25px;
-                            display: inline-block;
-                        }
-                        .agenda-item {
-                            margin-bottom: 30px;
-                            page-break-inside: avoid;
-                            background: white;
-                            border-radius: 10px;
-                            overflow: hidden;
-                            border: 1px solid #e3f2fd;
-                        }
-                        .agenda-title {
-                            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-                            padding: 18px 25px;
-                            font-weight: 700;
-                            font-size: 18px;
-                            color: #0d47a1;
-                            border-bottom: 3px solid #1976d2;
-                        }
-                        .agenda-content {
-                            padding: 25px;
-                            white-space: pre-wrap;
-                            line-height: 1.7;
-                            min-height: 50px;
-                            color: #444;
-                            font-size: 15px;
-                        }
-                        .footer {
-                            margin-top: 50px;
-                            padding: 25px;
-                            border-top: 3px solid #e3f2fd;
-                            text-align: center;
-                            background: linear-gradient(135deg, #f8fbfd, #e3f2fd);
-                            border-radius: 10px;
-                        }
-                        .footer-content {
-                            color: #1565c0;
-                            font-weight: 600;
-                            font-size: 14px;
-                        }
-                        .footer-date {
-                            color: #666;
-                            font-size: 12px;
-                            margin-top: 8px;
-                        }
-                    </style>
-                </head>
-                <body>
+            return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SWITZEA - ' + customer.customerName + '</title>' +
+                '<style>' +
+                '@page { margin: 2cm; size: A4; }' +
+                'body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; color: #1F2937; }' +
+                '.header { border-bottom: 3pt solid #2C5F7D; padding-bottom: 12pt; margin-bottom: 20pt; page-break-after: avoid; }' +
+                '.header h1 { color: #2C5F7D; font-size: 24pt; margin: 0 0 8pt 0; font-weight: 700; }' +
+                '.header p { color: #4B5563; margin: 0; font-size: 12pt; }' +
+                '.info-section { background: #F9FAFB; padding: 15pt; border-radius: 4pt; margin-bottom: 20pt; border-left: 4pt solid #2C5F7D; page-break-inside: avoid; }' +
+                '.info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; margin-bottom: 12pt; }' +
+                '.info-label { font-weight: 600; color: #1F2937; margin-bottom: 4pt; font-size: 10pt; }' +
+                '.info-value { color: #4B5563; font-size: 11pt; }' +
+                '.status-section { background: #FFF5F0; padding: 15pt; border-radius: 4pt; margin-bottom: 20pt; border-left: 4pt solid #E87461; page-break-inside: avoid; }' +
+                '.status-section h2 { color: #B33A2C; font-size: 16pt; margin: 0 0 15pt 0; font-weight: 600; page-break-after: avoid; }' +
+                '</style></head><body>
 <!-- SWITZEA Navigation Bar -->
     <div class="switzea-nav-bar">
         <div class="nav-content">
@@ -1039,296 +991,290 @@
         </div>
     </div>
 
-    
-                    <div class="header">
-                        <div class="logo">SWITZEA ApS</div>
-                        <h1>${meeting.title}</h1>
-                    </div>
-
-                    <div class="metadata">
-                        <div class="metadata-item">
-                            <div class="metadata-label">📅 Dato</div>
-                            <div class="metadata-value">${meeting.date}</div>
-                        </div>
-                        <div class="metadata-item">
-                            <div class="metadata-label">🕐 Oprettet</div>
-                            <div class="metadata-value">${new Date(meeting.createdAt).toLocaleDateString('da-DK')}</div>
-                        </div>
-                        ${meeting.participants ? `
-                        <div class="metadata-item metadata-full">
-                            <div class="metadata-label">👥 Deltagere</div>
-                            <div class="metadata-value">${meeting.participants}</div>
-                        </div>` : ''}
-                        ${meeting.referent ? `
-                        <div class="metadata-item ${meeting.participants ? '' : 'metadata-full'}">
-                            <div class="metadata-label">✍️ Referent</div>
-                            <div class="metadata-value">${meeting.referent}</div>
-                        </div>` : ''}
-                    </div>
-
-                    <div class="agenda-overview">
-                        <h3>📋 Agendaoversigt</h3>
-                        <ul class="agenda-list">
-                            ${meeting.agenda.map((point, index) => `
-                                <li>${index + 1}. ${point.title}</li>
-                            `).join('')}
-                        </ul>
-                    </div>
-
-                    <div class="section-divider">
-                        <div class="section-title">📝 Detaljerede punkter</div>
-                    </div>
-
-                    ${meeting.agenda.map(point => `
-                        <div class="agenda-item">
-                            <div class="agenda-title">${point.title}</div>
-                            <div class="agenda-content">${point.content || '<em>Intet indhold</em>'}</div>
-                        </div>
-                    `).join('')}
-
-                    <div class="footer">
-                        <div class="footer-content">SWITZEA Referat App</div>
-                        <div class="footer-date">Genereret ${new Date().toLocaleDateString('da-DK')}</div>
-                    </div>
-                </body>
-                </html>
-            `;
-
-            const blob = new Blob([wordContent], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${meeting.title.replace(/[^a-z0-9æøå ]/gi, '_')}_${meeting.date}.doc`;
-            link.click();
-            URL.revokeObjectURL(url);
+    ' +
+                '<div class="header">' +
+                '<h1>' + customer.customerName + '</h1>' +
+                '<p>📋 ' + customer.project + '</p>' +
+                '</div>' +
+                '<div class="info-section">' +
+                '<div class="info-row">' +
+                '<div><div class="info-label">👤 Kontaktperson:</div><div class="info-value">' + (customer.contactPerson || '-') + '</div></div>' +
+                '<div><div class="info-label">📧 Email:</div><div class="info-value">' + (customer.email || '-') + '</div></div>' +
+                '</div>' +
+                '<div class="info-row">' +
+                '<div><div class="info-label">📱 Telefon:</div><div class="info-value">' + (customer.phone || '-') + '</div></div>' +
+                '<div><div class="info-label">📊 Status:</div><div class="info-value">' + ({'active': 'Aktiv', 'pending': 'Afventer', 'completed': 'Afsluttet', 'urgent': 'Urgent'}[customer.status] || customer.status) + '</div></div>' +
+                '</div>' +
+                '<div class="info-row">' +
+                '<div><div class="info-label">📅 Sidste kontakt:</div><div class="info-value">' + formatDanishDate(customer.lastContact) + '</div></div>' +
+                '<div><div class="info-label">⏰ Næste opfølgning:</div><div class="info-value">' + formatDanishDate(customer.followUpDate) + '</div></div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="status-section">' +
+                '<h2>📝 Status</h2>' +
+                statusHTML +
+                '</div>' +
+                '</body></html>';
         }
 
-        // Export to PDF - FORBEDRET DESIGN
-        function exportToPDF(id) {
-            saveMeeting(id);
-
-            const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
-
-            const printDiv = document.getElementById('printView');
-            printDiv.innerHTML = `
-                <div class="print-header">
-                    <div class="print-logo">SWITZEA ApS</div>
-                    <h1 class="print-title">${meeting.title}</h1>
-                </div>
-
-                <div class="print-metadata">
-                    <div class="print-metadata-item">
-                        <div class="print-metadata-label">📅 Dato</div>
-                        <div class="print-metadata-value">${meeting.date}</div>
-                    </div>
-                    <div class="print-metadata-item">
-                        <div class="print-metadata-label">🕐 Oprettet</div>
-                        <div class="print-metadata-value">${new Date(meeting.createdAt).toLocaleDateString('da-DK')}</div>
-                    </div>
-                    ${meeting.participants ? `
-                    <div class="print-metadata-item print-metadata-full">
-                        <div class="print-metadata-label">👥 Deltagere</div>
-                        <div class="print-metadata-value">${meeting.participants}</div>
-                    </div>` : ''}
-                    ${meeting.referent ? `
-                    <div class="print-metadata-item ${meeting.participants ? '' : 'print-metadata-full'}">
-                        <div class="print-metadata-label">✍️ Referent</div>
-                        <div class="print-metadata-value">${meeting.referent}</div>
-                    </div>` : ''}
-                </div>
-
-                <div class="print-agenda-overview">
-                    <h3>📋 Agendaoversigt</h3>
-                    <ul class="print-agenda-list">
-                        ${meeting.agenda.map((point, index) => `
-                            <li>${index + 1}. ${point.title}</li>
-                        `).join('')}
-                    </ul>
-                </div>
-
-                <div class="print-section-divider">
-                    <div class="print-section-title">📝 Detaljerede punkter</div>
-                </div>
-
-                ${meeting.agenda.map(point => `
-                    <div class="print-agenda-item">
-                        <div class="print-agenda-title">${point.title}</div>
-                        <div class="print-agenda-content">${point.content || '<em>Intet indhold</em>'}</div>
-                    </div>
-                `).join('')}
-
-                <div class="print-footer">
-                    <div class="print-footer-content">SWITZEA Referat App</div>
-                    <div class="print-footer-date">Genereret ${new Date().toLocaleDateString('da-DK')}</div>
-                </div>
-            `;
-
-            setTimeout(() => {
-                window.print();
-            }, 100);
+        function toggleStatusForm() {
+            const form = document.getElementById('statusForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
 
-        // Save meeting
-        function saveMeeting(id) {
-            const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
-
-            const participantsField = document.getElementById('participantsField');
-            const referentField = document.getElementById('referentField');
-            if (participantsField) meeting.participants = participantsField.value;
-            if (referentField) meeting.referent = referentField.value;
-
-            meeting.agenda.forEach((p, i) => {
-                const textarea = document.getElementById(`a${i}`);
-                if (textarea) {
-                    p.content = textarea.value;
-                }
-            });
-
-            meeting.updatedAt = new Date().toISOString();
-            saveMeetingsLocal();
-
-            if (currentSearchTerm) {
-                performSearch(currentSearchTerm);
-            }
-
-            alert('✅ Referat gemt lokalt!');
-        }
-
-        // Delete meeting
-        function deleteMeeting(id) {
-            if (!confirm('Er du sikker på at du vil slette dette referat?')) {
+        function addStatusEntry() {
+            const customer = customers.find(function(c) { return c.id === currentCustomerId; });
+            if (!customer) return;
+            
+            const date = document.getElementById('statusDate').value;
+            const headline = document.getElementById('statusHeadline').value.trim();
+            const text = document.getElementById('statusText').value.trim();
+            
+            if (!date || !headline || !text) {
+                alert('Indtast dato, overskrift og status');
                 return;
             }
-
-            meetings = meetings.filter(m => m.id !== id);
-            saveMeetingsLocal();
-
-            const contentDiv = document.getElementById('meetingContent');
-            contentDiv.innerHTML = `
-                <div class="empty-state">
-                    <h2>Referat slettet</h2>
-                    <p>Vælg et andet referat eller opret et nyt.</p>
-                </div>
-            `;
-
-            currentMeetingId = null;
-            renderMeetings();
-
-            if (currentSearchTerm) {
-                performSearch(currentSearchTerm);
-            }
+            
+            customer.statusTimeline.unshift({
+                date: date,
+                headline: headline,
+                text: text,
+                timestamp: Date.now()
+            });
+            
+            document.getElementById('statusHeadline').value = '';
+            document.getElementById('statusText').value = '';
+            document.getElementById('statusDate').value = new Date().toISOString().split('T')[0];
+            
+            saveCustomersLocal();
+            renderStatusTimeline(customer);
+            toggleStatusForm();
         }
 
-        // Advanced search functionality
+        function renderStatusTimeline(customer) {
+            const container = document.getElementById('statusTimeline');
+            if (!container) return;
+            
+            if (!customer.statusTimeline || customer.statusTimeline.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #9CA3AF; padding: 20px;">Ingen status-opdateringer endnu</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            customer.statusTimeline.forEach(function(entry, index) {
+                const div = document.createElement('div');
+                div.className = 'timeline-entry';
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'timeline-entry-delete';
+                deleteBtn.textContent = '×';
+                deleteBtn.title = 'Slet';
+                deleteBtn.addEventListener('click', function() { deleteStatusEntry(index); });
+                
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'timeline-entry-date';
+                dateDiv.textContent = formatDanishDate(entry.date);
+                
+                const headlineDiv = document.createElement('div');
+                headlineDiv.className = 'timeline-entry-headline';
+                headlineDiv.textContent = entry.headline || '';
+                
+                const textDiv = document.createElement('div');
+                textDiv.className = 'timeline-entry-text';
+                textDiv.textContent = entry.text || '';
+                
+                div.appendChild(deleteBtn);
+                div.appendChild(dateDiv);
+                div.appendChild(headlineDiv);
+                div.appendChild(textDiv);
+                container.appendChild(div);
+            });
+        }
+
+        function deleteStatusEntry(index) {
+            if (!confirm('Slet denne status-opdatering?')) return;
+            const customer = customers.find(function(c) { return c.id === currentCustomerId; });
+            if (!customer) return;
+            customer.statusTimeline.splice(index, 1);
+            saveCustomersLocal();
+            renderStatusTimeline(customer);
+        }
+
+        function saveCustomerStatus(id) {
+            const customer = customers.find(function(c) { return c.id === id; });
+            if (!customer) return;
+            
+            customer.contactPerson = document.getElementById('contactPersonField').value;
+            customer.email = document.getElementById('emailField').value;
+            customer.phone = document.getElementById('phoneField').value;
+            customer.status = document.getElementById('statusField').value;
+            customer.lastContact = document.getElementById('lastContactField').value;
+            customer.followUpDate = document.getElementById('followUpDateField').value;
+            customer.project = document.getElementById('projectField').value;
+            customer.updatedAt = new Date().toISOString();
+            
+            saveCustomersLocal();
+            renderCustomers();
+            
+            alert('✅ Kundestatus gemt lokalt!');
+        }
+
+        function deleteCustomer(id) {
+            if (!confirm('Er du sikker på at du vil slette denne kunde?')) return;
+            customers = customers.filter(function(c) { return c.id !== id; });
+            saveCustomersLocal();
+            document.getElementById('customerContent').innerHTML = '<div class="empty-state"><h2>Kunde slettet</h2><p>Vælg en anden kunde eller opret en ny.</p></div>';
+            currentCustomerId = null;
+            renderCustomers();
+        }
+
         function performSearch(term) {
             const resultsContainer = document.getElementById('searchResults');
-            resultsContainer.innerHTML = '';
-
+            
             if (!term || term.trim() === '') {
-                resultsContainer.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Indtast søgeord</p>';
+                resultsContainer.innerHTML = '<p style="color: #9CA3AF; text-align: center; padding: 20px;">Indtast søgeord</p>';
                 return;
             }
-
+            
             const searchTerm = term.toLowerCase().trim();
             const results = [];
-
-            meetings.forEach(meeting => {
-                if (meeting.title.toLowerCase().includes(searchTerm)) {
+            
+            customers.forEach(function(customer) {
+                if (customer.customerName.toLowerCase().includes(searchTerm)) {
                     results.push({
-                        meetingId: meeting.id,
-                        meetingTitle: meeting.title,
-                        meetingDate: meeting.date,
-                        location: 'Titel',
-                        snippet: meeting.title,
-                        pointIndex: null
+                        customerId: customer.id,
+                        customerName: customer.customerName,
+                        project: customer.project,
+                        location: 'Kunde navn',
+                        snippet: customer.customerName
                     });
                 }
-
-                if (meeting.participants && meeting.participants.toLowerCase().includes(searchTerm)) {
+                
+                if (customer.project.toLowerCase().includes(searchTerm)) {
                     results.push({
-                        meetingId: meeting.id,
-                        meetingTitle: meeting.title,
-                        meetingDate: meeting.date,
-                        location: 'Deltagere',
-                        snippet: meeting.participants,
-                        pointIndex: null
+                        customerId: customer.id,
+                        customerName: customer.customerName,
+                        project: customer.project,
+                        location: 'Projekt',
+                        snippet: customer.project
                     });
                 }
-
-                meeting.agenda.forEach((point, index) => {
-                    if (point.content.toLowerCase().includes(searchTerm)) {
-                        const contentLower = point.content.toLowerCase();
-                        const position = contentLower.indexOf(searchTerm);
-                        const start = Math.max(0, position - 40);
-                        const end = Math.min(point.content.length, position + searchTerm.length + 40);
-                        let snippet = point.content.substring(start, end);
-
-                        if (start > 0) snippet = '...' + snippet;
-                        if (end < point.content.length) snippet = snippet + '...';
-
-                        const regex = new RegExp(`(${searchTerm})`, 'gi');
-                        snippet = snippet.replace(regex, '<span class="highlight">$1</span>');
-
-                        results.push({
-                            meetingId: meeting.id,
-                            meetingTitle: meeting.title,
-                            meetingDate: meeting.date,
-                            location: point.title,
-                            snippet: snippet,
-                            pointIndex: index
-                        });
-                    }
-                });
+                
+                if (customer.contactPerson && customer.contactPerson.toLowerCase().includes(searchTerm)) {
+                    results.push({
+                        customerId: customer.id,
+                        customerName: customer.customerName,
+                        project: customer.project,
+                        location: 'Kontaktperson',
+                        snippet: customer.contactPerson
+                    });
+                }
+                
+                if (customer.statusTimeline && customer.statusTimeline.length > 0) {
+                    customer.statusTimeline.forEach(function(entry) {
+                        if (entry.headline && entry.headline.toLowerCase().includes(searchTerm)) {
+                            results.push({
+                                customerId: customer.id,
+                                customerName: customer.customerName,
+                                project: customer.project,
+                                location: 'Status: ' + entry.headline,
+                                snippet: highlightText(entry.headline, searchTerm)
+                            });
+                        }
+                        if (entry.text && entry.text.toLowerCase().includes(searchTerm)) {
+                            const snippet = createSnippet(entry.text, searchTerm);
+                            results.push({
+                                customerId: customer.id,
+                                customerName: customer.customerName,
+                                project: customer.project,
+                                location: 'Status: ' + (entry.headline || 'Noter'),
+                                snippet: snippet
+                            });
+                        }
+                    });
+                }
             });
-
+            
             if (results.length === 0) {
-                resultsContainer.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Ingen resultater fundet</p>';
+                resultsContainer.innerHTML = '<p style="color: #9CA3AF; text-align: center; padding: 20px;">Ingen resultater fundet</p>';
                 return;
             }
-
-            results.forEach(result => {
+            
+            resultsContainer.innerHTML = '';
+            results.forEach(function(result) {
                 const div = document.createElement('div');
                 div.className = 'search-result';
-                div.innerHTML = `
-                    <div class="search-result-title">${result.meetingTitle}</div>
-                    <div class="search-result-location">📍 ${result.location} • ${result.meetingDate}</div>
-                    <div class="search-result-snippet">${result.snippet}</div>
-                `;
-                div.onclick = () => openMeeting(result.meetingId, result.pointIndex);
+                
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'search-result-title';
+                titleDiv.textContent = result.customerName;
+                
+                const projectDiv = document.createElement('div');
+                projectDiv.className = 'search-result-project';
+                projectDiv.textContent = '📍 ' + result.location + ' • ' + result.project;
+                
+                const snippetDiv = document.createElement('div');
+                snippetDiv.className = 'search-result-snippet';
+                snippetDiv.innerHTML = result.snippet;
+                
+                div.appendChild(titleDiv);
+                div.appendChild(projectDiv);
+                div.appendChild(snippetDiv);
+                div.addEventListener('click', function() { openCustomer(result.customerId); });
                 resultsContainer.appendChild(div);
             });
         }
 
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            currentSearchTerm = e.target.value;
-            performSearch(currentSearchTerm);
-        });
-
-        function saveMeetingsLocal() {
-            localStorage.setItem('switzea-referater', JSON.stringify(meetings));
+        function createSnippet(text, searchTerm) {
+            const position = text.toLowerCase().indexOf(searchTerm.toLowerCase());
+            if (position === -1) return text.substring(0, 100) + '...';
+            
+            const start = Math.max(0, position - 40);
+            const end = Math.min(text.length, position + searchTerm.length + 40);
+            let snippet = text.substring(start, end);
+            
+            if (start > 0) snippet = '...' + snippet;
+            if (end < text.length) snippet = snippet + '...';
+            
+            return highlightText(snippet, searchTerm);
         }
 
-        function loadMeetingsLocal() {
-            const saved = localStorage.getItem('switzea-referater');
+        function highlightText(text, searchTerm) {
+            const regex = new RegExp('(' + searchTerm + ')', 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            performSearch(e.target.value);
+        });
+
+        function saveCustomersLocal() {
+            localStorage.setItem('switzea-customers', JSON.stringify(customers));
+        }
+
+        function loadCustomersLocal() {
+            const saved = localStorage.getItem('switzea-customers');
             if (saved) {
                 try {
-                    meetings = JSON.parse(saved);
+                    customers = JSON.parse(saved);
                 } catch (e) {
-                    console.error('Could not load meetings:', e);
-                    meetings = [];
+                    console.error('Could not load customers:', e);
+                    customers = [];
                 }
             }
         }
 
-        window.onload = () => {
-            loadMeetingsLocal();
-            renderMeetings();
-
-            const resultsContainer = document.getElementById('searchResults');
-            resultsContainer.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Indtast søgeord</p>';
+        window.onload = function() {
+            loadCustomersLocal();
+            renderCustomers();
+            document.getElementById('searchResults').innerHTML = '<p style="color: #9CA3AF; text-align: center; padding: 20px;">Indtast søgeord</p>';
+            updateToggleButtons();
         };
+
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('customerModal');
+            if (e.target === modal) closeModal();
+        });
     
         // SWITZEA Auth Check
         function checkSwitzeaAuth() {
