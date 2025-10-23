@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWITZEA Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-section h1 {
+            color: #2C5F7D;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .logo-section p {
+            color: #6B7280;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #1F2937;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3A7CA5;
+            box-shadow: 0 0 0 4px rgba(58, 124, 165, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(44, 95, 125, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background: #FEE2E2;
+            color: #DC2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .test-users {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #E5E7EB;
+        }
+
+        .test-users h3 {
+            color: #4B5563;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .test-user-card {
+            background: #F9FAFB;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            border-left: 3px solid #3A7CA5;
+        }
+
+        .test-user-card strong {
+            color: #2C5F7D;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .test-user-card code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #6B7280;
+            font-size: 12px;
+        }
+
+        .password-hint {
+            color: #6B7280;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .logo-section h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <h1>👥 SWITZEA</h1>
+            <p>Administration Platform</p>
+        </div>
+
+        <div id="errorMessage" class="error-message">
+            Forkert email eller adgangskode
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email adresse</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    placeholder="din@email.dk" 
+                    required 
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Adgangskode</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="••••••••" 
+                    required
+                    autocomplete="current-password"
+                >
+                <div class="password-hint">💡 Alle test brugere har adgangskode: <code>test123</code></div>
+            </div>
+
+            <button type="submit" class="login-button">
+                Log ind
+            </button>
+        </form>
+
+        <div class="test-users">
+            <h3>🧪 Test Brugere (Local Testing)</h3>
+            <div class="test-user-card">
+                <strong>Bruger 1 - Admin</strong>
+                <code>admin@switzea.dk</code>
+            </div>
+            <div class="test-user-card">
+                <strong>Bruger 2 - Projekt Manager</strong>
+                <code>projekt@switzea.dk</code>
+            </div>
+            <div class="test-user-card">
+                <strong>Bruger 3 - Medarbejder</strong>
+                <code>medarbejder@switzea.dk</code>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TEST BRUGERE (Local only - erstattes med Firebase senere)
+        const testUsers = [
+            { email: 'admin@switzea.dk', password: 'test123', name: 'Admin', role: 'admin' },
+            { email: 'projekt@switzea.dk', password: 'test123', name: 'Projekt Manager', role: 'manager' },
+            { email: 'medarbejder@switzea.dk', password: 'test123', name: 'Medarbejder', role: 'user' }
+        ];
+
+        // Check om bruger allerede er logget ind
+        window.addEventListener('DOMContentLoaded', function() {
+            const currentUser = localStorage.getItem('switzea_currentUser');
+            if (currentUser) {
+                // Redirect til dashboard hvis allerede logget ind
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Find bruger
+            const user = testUsers.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                // Success! Gem bruger info
+                const userSession = {
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                    loginTime: new Date().toISOString()
+                };
+
+                localStorage.setItem('switzea_currentUser', JSON.stringify(userSession));
+                
+                // Redirect til dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                // Fejl - vis besked
+                errorMessage.classList.add('show');
+                
+                // Ryd besked efter 3 sekunder
+                setTimeout(function() {
+                    errorMessage.classList.remove('show');
+                }, 3000);
+
+                // Clear password felt
+                document.getElementById('password').value = '';
+            }
+        });
+
+        // Auto-fill for hurtig test (kan fjernes senere)
+        document.getElementById('email').addEventListener('dblclick', function() {
+            this.value = 'admin@switzea.dk';
+            document.getElementById('password').value = 'test123';
+        });
+    </script>
+</body>
+</html>

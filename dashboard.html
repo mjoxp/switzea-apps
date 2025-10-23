@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWITZEA Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #F3F4F6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-left p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-info .name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-info .role {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .logout-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 40px;
+        }
+
+        .welcome-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+
+        .welcome-section h2 {
+            color: #2C5F7D;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-section p {
+            color: #6B7280;
+            font-size: 16px;
+        }
+
+        /* App Grid */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: block;
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(44, 95, 125, 0.15);
+            border-color: #3A7CA5;
+        }
+
+        .app-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .app-card h3 {
+            color: #2C5F7D;
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .app-card p {
+            color: #6B7280;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .app-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-blue {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .badge-orange {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .badge-red {
+            background: #FFF5F0;
+            color: #E87461;
+        }
+
+        .app-arrow {
+            color: #3A7CA5;
+            font-size: 20px;
+            margin-top: 12px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #9CA3AF;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 16px 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .main-content {
+                padding: 0 20px;
+                margin: 20px auto;
+            }
+
+            .apps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9CA3AF;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1>👥 SWITZEA Dashboard</h1>
+                <p>Administration Platform</p>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="name" id="userName">Indlæser...</div>
+                    <div class="role" id="userRole"></div>
+                </div>
+                <button class="logout-button" id="logoutBtn">
+                    🚪 Log ud
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="welcome-section">
+            <h2 id="welcomeMessage">Velkommen tilbage!</h2>
+            <p>Vælg den app du vil arbejde med nedenfor</p>
+        </div>
+
+        <div class="apps-grid">
+            <!-- Projektplanner App -->
+            <a href="projektplanner.html" class="app-card">
+                <div class="app-icon">📊</div>
+                <h3>Projektplanner</h3>
+                <p>Planlæg og administrer projekter med opgaver, deadlines og milepæle.</p>
+                <span class="app-badge badge-blue">Projekt Management</span>
+                <div class="app-arrow">→</div>
+            </a>
+
+            <!-- Referat App -->
+            <a href="referat.html" class="app-card">
+                <div class="app-icon">📝</div>
+                <h3>Referat</h3>
+                <p>Skriv og administrer mødereferater med deltagere og handlingspunkter.</p>
+                <span class="app-badge badge-orange">Mødestyring</span>
+                <div class="app-arrow">→</div>
+            </a>
+
+            <!-- Kundestatus App -->
+            <a href="kundestatus.html" class="app-card">
+                <div class="app-icon">👥</div>
+                <h3>Kundestatus</h3>
+                <p>Hold styr på kunder, projekter og status-opdateringer med PDF eksport.</p>
+                <span class="app-badge badge-red">Kunde Administration</span>
+                <div class="app-arrow">→</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>SWITZEA ApS © 2025 | Local Testing Mode</p>
+    </div>
+
+    <script>
+        // Check login status
+        function checkAuth() {
+            const currentUser = localStorage.getItem('switzea_currentUser');
+            
+            if (!currentUser) {
+                // Ikke logget ind - redirect til login
+                window.location.href = 'index.html';
+                return null;
+            }
+
+            return JSON.parse(currentUser);
+        }
+
+        // Initialize dashboard
+        window.addEventListener('DOMContentLoaded', function() {
+            const user = checkAuth();
+            
+            if (user) {
+                // Vis bruger info
+                document.getElementById('userName').textContent = user.name;
+                
+                let roleText = '';
+                if (user.role === 'admin') roleText = '👑 Administrator';
+                else if (user.role === 'manager') roleText = '📊 Projekt Manager';
+                else if (user.role === 'user') roleText = '👤 Medarbejder';
+                
+                document.getElementById('userRole').textContent = roleText;
+                document.getElementById('welcomeMessage').textContent = `Velkommen tilbage, ${user.name}!`;
+            }
+        });
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('Er du sikker på at du vil logge ud?')) {
+                // Clear session
+                localStorage.removeItem('switzea_currentUser');
+                
+                // Redirect til login
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Keyboard shortcut for quick navigation
+        document.addEventListener('keydown', function(e) {
+            // Alt + 1/2/3 for quick app access
+            if (e.altKey) {
+                if (e.key === '1') window.location.href = 'projektplanner.html';
+                if (e.key === '2') window.location.href = 'referat.html';
+                if (e.key === '3') window.location.href = 'kundestatus.html';
+            }
+        });
+    </script>
+</body>
+</html>
