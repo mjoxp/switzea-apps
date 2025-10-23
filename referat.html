@@ -1,1422 +1,2361 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SWITZEA Referat App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWITZEA Projekt</title>
     <style>
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #f0f2f5; 
-            margin: 0; 
-            padding: 0;
+        /* Reset og base styling */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #dbeafe;
+            
+            /* Professionelle status farver */
+            --status-planned: #6b7280;     /* Neutral grå */
+            --status-progress: #3b82f6;    /* Professionel blå */
+            --status-completed: #10b981;   /* Blød grøn */
+            
+            /* Behagelige grå nuancer */
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            /* Sekundære farver */
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
         }
-        .app { 
-            display: flex; 
-            min-height: 100vh; 
+        
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
         }
-
-        /* Sidebar */
-        .sidebar { 
-            width: 260px; 
-            background: #ffffff; 
-            border-right: 1px solid #e0e0e0; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
         }
-        .sidebar h1 { 
-            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-            color: white; 
-            padding: 20px; 
-            margin: 0; 
-            font-size: 20px;
-            text-align: center;
-        }
-        .sidebar button {
-            background: #1976d2;
+        
+        /* Header med projekt info */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
-            border: none;
-            padding: 12px 16px;
-            margin: 16px 12px 8px 12px;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.2s;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
         }
-        .sidebar button:hover {
-            background: #1565c0;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
-        }
-        .meetings-list { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 8px 12px; 
-        }
-        .meeting { 
-            border: 1px solid #e0e0e0; 
-            padding: 10px; 
-            margin-bottom: 8px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            background: #fafafa;
-            transition: all 0.2s;
-        }
-        .meeting:hover { 
-            background: #e3f2fd; 
-            border-color: #1976d2;
-            transform: translateX(3px);
-        }
-        .meeting.active {
-            background: #e3f2fd;
-            border-color: #1976d2;
-            font-weight: 500;
-        }
-
-        /* Main Content */
-        .main { 
-            flex: 1; 
-            padding: 20px; 
-            background: #f0f2f5; 
-            display: flex; 
-            flex-direction: row; 
-            gap: 20px;
-        }
-        #meetingContent { 
-            flex: 2; 
-            background: white;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .meeting-header { 
-            border-bottom: 3px solid #1976d2; 
-            margin-bottom: 20px; 
-            padding-bottom: 12px;
-        }
-        .meeting-header h2 {
-            margin: 0 0 8px 0;
-            color: #1976d2;
-        }
-        .meeting-header p {
-            margin: 0 0 8px 0;
-            color: #666;
-        }
-
-        /* Metadata fields */
-        .metadata-fields {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border-left: 4px solid #1976d2;
-        }
-        .metadata-fields label {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 6px;
-            font-size: 14px;
-        }
-        .metadata-fields input,
-        .metadata-fields textarea {
+        
+        .header-content {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 14px;
-            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
         }
-        .metadata-fields textarea {
-            min-height: 60px;
-            resize: vertical;
+        
+        .header-left {
+            flex: 1;
         }
-        .metadata-fields input:focus,
-        .metadata-fields textarea:focus {
-            outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        
+        .header-left h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
         }
-
-        /* Agenda input section */
-        .agenda-input-section {
-            background: #fff9e6;
-            padding: 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border-left: 4px solid #ffa726;
-        }
-        .agenda-input-section label {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        .agenda-input-section textarea {
-            width: 100%;
-            min-height: 120px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-        .agenda-input-section button {
-            background: #ffa726;
-            margin: 0;
-        }
-        .agenda-input-section button:hover {
-            background: #fb8c00;
-        }
-        .agenda-input-section .help-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 8px;
-            font-style: italic;
-        }
-
-        /* Agenda Points */
-        .agenda-point { 
-            background: #f8f9fa; 
-            padding: 16px; 
-            margin-bottom: 14px; 
-            border-left: 4px solid #1976d2; 
-            border-radius: 6px; 
-        }
-        .agenda-point h4 {
-            margin: 0 0 10px 0;
-            color: #333;
-        }
-        textarea { 
-            width: 100%; 
-            min-height: 80px; 
-            border: 1px solid #ddd; 
-            border-radius: 6px; 
-            padding: 10px; 
-            font-family: inherit;
-            font-size: 14px;
-            resize: vertical;
-            transition: border 0.2s;
-        }
-        textarea:focus {
-            outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-        }
-
-        /* Highlight */
-        .highlight {
-            background-color: yellow;
-            font-weight: bold;
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
-
-        /* Buttons */
-        button { 
-            background-color: #1976d2; 
-            color: white; 
-            border: none; 
-            padding: 10px 18px; 
-            margin: 8px 4px 8px 0; 
-            cursor: pointer; 
-            border-radius: 6px; 
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        button:hover { 
-            background-color: #1565c0; 
-            box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3);
-        }
-        button:active {
-            transform: scale(0.98);
-        }
-        .btn-export {
-            background: #2e7d32;
-        }
-        .btn-export:hover {
-            background: #1b5e20;
-        }
-        .btn-pdf {
-            background: #c62828;
-        }
-        .btn-pdf:hover {
-            background: #b71c1c;
-        }
-
-        /* Right Panel */
-        .right-panel { 
-            width: 340px; 
-            background: white; 
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .right-panel h3 {
-            margin: 0 0 16px 0;
-            color: #333;
-            font-size: 18px;
-        }
-        .search-box { 
-            margin-bottom: 16px; 
-        }
-        .search-box input { 
-            width: 100%; 
-            padding: 10px; 
-            border-radius: 6px; 
-            border: 1px solid #ddd; 
-            font-size: 14px;
-            transition: border 0.2s;
-        }
-        .search-box input:focus {
-            outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-        }
-        #searchResults {
-            max-height: calc(100vh - 240px);
-            overflow-y: auto;
-        }
-
-        /* Search Result Item */
-        .search-result {
-            border: 1px solid #e0e0e0;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            background: #fafafa;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .search-result:hover {
-            background: #e3f2fd;
-            border-color: #1976d2;
-            transform: translateX(3px);
-        }
-        .search-result-title {
-            font-weight: 600;
-            color: #1976d2;
-            margin-bottom: 4px;
-        }
-        .search-result-location {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 6px;
-        }
-        .search-result-snippet {
-            font-size: 13px;
-            color: #333;
+        
+        .project-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
             line-height: 1.4;
         }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
+        
+        .project-info p {
+            margin-bottom: 0.25rem;
         }
-        .empty-state h2 {
-            color: #666;
+        
+        .project-info strong {
+            color: rgba(255, 255, 255, 0.9);
         }
-
-        /* Print/PDF Styles - FORBEDRET DESIGN */
-        .print-view {
-            display: none;
+        
+        .project-info .placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
         }
-
-        @media print {
-            body { 
-                background: white; 
-                margin: 0;
-                padding: 0;
-            }
-            .app, .sidebar, .right-panel, button, .no-print, .agenda-input-section { 
-                display: none !important; 
-            }
-            .print-view {
-                display: block !important;
-                padding: 30px;
-                font-family: 'Calibri', 'Arial', sans-serif;
-                max-width: 800px;
-                margin: 0 auto;
-                color: #333;
-            }
-
-            /* ELEGANT HEADER DESIGN */
-            .print-header {
-                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-                padding: 30px;
-                border-radius: 12px;
-                text-align: center;
-                margin-bottom: 30px;
-                border: 3px solid #1976d2;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            }
-            .print-logo {
-                font-size: 32px;
-                font-weight: 800;
-                color: #0d47a1;
-                margin-bottom: 15px;
-                letter-spacing: 2px;
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .print-title {
-                color: #1976d2;
-                font-size: 28px;
-                margin: 15px 0;
-                font-weight: 700;
-            }
-
-            /* METADATA SECTION - PROFESSIONEL GRID */
-            .print-metadata {
-                background: #f8fbfd;
-                padding: 25px;
-                border-radius: 10px;
-                margin: 25px 0;
-                border-left: 6px solid #1976d2;
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 20px;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            }
-            .print-metadata-full {
-                grid-column: 1 / -1;
-            }
-            .print-metadata-item {
-                background: white;
-                padding: 15px;
-                border-radius: 8px;
-                border: 1px solid #e3f2fd;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            }
-            .print-metadata-label {
-                font-weight: 700;
-                color: #1565c0;
-                font-size: 14px;
-                margin-bottom: 8px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-            .print-metadata-value {
-                color: #333;
-                font-size: 16px;
-                line-height: 1.4;
-            }
-
-            /* AGENDA OVERVIEW - ELEGANT LISTE */
-            .print-agenda-overview {
-                background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-                padding: 25px;
-                border-radius: 10px;
-                margin: 30px 0;
-                border-left: 6px solid #ffa726;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            }
-            .print-agenda-overview h3 {
-                color: #e65100;
-                font-size: 22px;
-                margin-bottom: 20px;
-                font-weight: 700;
-                text-align: center;
-            }
-            .print-agenda-list {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                display: grid;
-                gap: 12px;
-            }
-            .print-agenda-list li {
-                background: white;
-                padding: 12px 18px;
-                border-radius: 6px;
-                border-left: 4px solid #ff9800;
-                font-weight: 600;
-                color: #bf360c;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-
-            /* SECTION DIVIDER */
-            .print-section-divider {
-                text-align: center;
-                margin: 40px 0;
-                position: relative;
-            }
-            .print-section-divider::before {
-                content: '';
-                position: absolute;
-                top: 50%;
-                left: 0;
-                right: 0;
-                height: 2px;
-                background: linear-gradient(90deg, transparent, #1976d2, transparent);
-            }
-            .print-section-title {
-                background: white;
-                color: #1565c0;
-                font-size: 24px;
-                font-weight: 700;
-                padding: 0 25px;
-                display: inline-block;
-            }
-
-            /* AGENDA ITEMS - MODERNE CARDS */
-            .print-agenda-item {
-                margin-bottom: 30px;
-                page-break-inside: avoid;
-                background: white;
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-                border: 1px solid #e3f2fd;
-            }
-            .print-agenda-title {
-                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-                padding: 18px 25px;
-                font-weight: 700;
-                font-size: 18px;
-                color: #0d47a1;
-                border-bottom: 3px solid #1976d2;
-            }
-            .print-agenda-content {
-                padding: 25px;
-                white-space: pre-wrap;
-                line-height: 1.7;
-                min-height: 50px;
-                color: #444;
-                font-size: 15px;
-            }
-
-            /* ELEGANT FOOTER */
-            .print-footer {
-                margin-top: 50px;
-                padding: 25px;
-                border-top: 3px solid #e3f2fd;
-                text-align: center;
-                background: linear-gradient(135deg, #f8fbfd 0%, #e3f2fd 100%);
-                border-radius: 10px;
-            }
-            .print-footer-content {
-                color: #1565c0;
-                font-weight: 600;
-                font-size: 14px;
-            }
-            .print-footer-date {
-                color: #666;
-                font-size: 12px;
-                margin-top: 8px;
-            }
+        
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: flex-start;
         }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-            .app { flex-direction: column; }
-            .sidebar { 
-                width: 100%; 
-                max-height: 200px;
-                border-right: none;
-                border-bottom: 1px solid #e0e0e0;
-            }
-            .main { 
-                flex-direction: column; 
-                padding: 16px;
-            }
-            #meetingContent { 
-                padding: 16px;
-            }
-            .right-panel { 
-                width: 100%; 
-                margin-top: 16px;
-            }
-
-            /* Print responsive */
-            @media print {
-                .print-metadata {
-                    grid-template-columns: 1fr;
-                }
-            }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
         }
-    
-        /* SWITZEA Navigation Bar */
-        .switzea-nav-bar {
-            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
-            color: white;
-            padding: 12px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 999;
+        
+        .btn:hover { transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        
+        .btn-success { background: var(--success-color); color: white; }
+        .btn-success:hover { background: #059669; }
+        
+        .btn-outline { 
+            background: transparent; 
+            color: white; 
+            border: 1.5px solid rgba(255,255,255,0.3); 
         }
-
-        .nav-content {
-            max-width: 1400px;
-            margin: 0 auto;
+        .btn-outline:hover { 
+            background: rgba(255,255,255,0.1); 
+            border-color: rgba(255,255,255,0.5); 
+        }
+        
+        .btn-secondary { background: var(--gray-600); color: white; }
+        .btn-secondary:hover { background: var(--gray-700); }
+        
+        .btn-danger { background: var(--danger-color); color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        
+        /* Main layout */
+        .main-container {
+            width: 100%;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
         }
-
-        .nav-back-btn, .nav-logout-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
+        
+        .craftsman-list {
+            list-style: none;
+        }
+        
+        .craftsman-item {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+            transition: all 0.2s;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .craftsman-item:hover {
+            background: var(--gray-100);
+            transform: translateX(2px);
+        }
+        
+        .craftsman-name {
             font-weight: 500;
+            color: var(--gray-800);
+        }
+        
+        .delete-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.75rem;
             transition: all 0.2s;
         }
-
-        .nav-back-btn:hover, .nav-logout-btn:hover {
-            background: rgba(255,255,255,0.3);
+        
+        .delete-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
         }
-
-        .nav-app-links {
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--gray-500);
+        }
+        
+        .empty-state p {
+            margin-bottom: 1rem;
+        }
+        
+        /* Timeline */
+        .timeline-container {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            overflow: hidden;
             display: flex;
-            gap: 12px;
+            flex-direction: column;
+            height: 100%;
         }
-
-        .nav-app-links a {
+        
+        .timeline-header {
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .timeline-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        
+        .timeline-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .week-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .week-display {
+            background: var(--primary-color);
             color: white;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            transition: background 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
         }
-
-        .nav-app-links a:hover {
-            background: rgba(255,255,255,0.15);
+        
+        .date-input {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.375rem;
+            font-size: 0.9rem;
         }
-
+        
+        .date-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        /* Timeline Grid */
+        .timeline-grid {
+            overflow: auto;
+            flex: 1;
+        }
+        
+        .grid-header {
+            display: grid;
+            grid-template-columns: 200px repeat(15, 120px);
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--gray-200);
+            min-width: fit-content;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .grid-header-cell {
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--gray-700);
+            border-right: 1px solid var(--gray-200);
+            text-align: center;
+        }
+        
+        .grid-header-cell:first-child {
+            text-align: left;
+            background: var(--gray-200);
+        }
+        
+        .day-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .day-name {
+            font-weight: 600;
+        }
+        
+        .day-date {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+        
+        .day-header.weekend {
+            color: var(--danger-color);
+        }
+        
+        .day-header.today {
+            color: var(--primary-color);
+            background: var(--primary-light);
+            border-radius: 0.25rem;
+        }
+        
+        .grid-body {
+            min-width: fit-content;
+        }
+        
+        .grid-row {
+            display: grid;
+            grid-template-columns: 200px repeat(15, 120px);
+            border-bottom: 1px solid var(--gray-200);
+            min-height: 80px;
+            position: relative;
+        }
+        
+        .grid-row:nth-child(even) {
+            background: var(--gray-50);
+        }
+        
+        .grid-row:hover {
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        .craftsman-cell {
+            padding: 1rem 0.75rem;
+            font-weight: 500;
+            color: var(--gray-800);
+            background: var(--gray-100);
+            border-right: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .day-cell {
+            border-right: 1px solid var(--gray-200);
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-height: 80px;
+        }
+        
+        .day-cell:hover {
+            background: rgba(37, 99, 235, 0.1);
+        }
+        
+        .day-cell.weekend {
+            background: var(--gray-50);
+        }
+        
+        .day-cell.today {
+            background: var(--primary-light);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .day-cell.drop-zone {
+            background: rgba(16, 185, 129, 0.1) !important;
+            border: 2px dashed var(--success-color) !important;
+        }
+        
+        /* Professionelle task farver */
+        .task {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            cursor: move;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+            height: 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 5;
+        }
+        
+        .task:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px -1px rgba(0, 0, 0, 0.15);
+            z-index: 6;
+        }
+        
+        .task.dragging {
+            opacity: 0.8;
+            transform: rotate(2deg);
+            z-index: 1000;
+        }
+        
+        /* Professionelle status farver */
+        .task.planned { 
+            background: var(--status-planned);
+            border-left: 4px solid #4b5563;
+        }
+        .task.in-progress { 
+            background: var(--status-progress);
+            border-left: 4px solid #1d4ed8;
+        }
+        .task.completed { 
+            background: var(--status-completed);
+            border-left: 4px solid #059669;
+        }
+        
+        .task-title {
+            font-weight: 500;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+        
+        .task-controls {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .task-control-btn {
+            background: #8B7355;
+            border: none;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .task-control-btn:hover {
+            background: #6B5845;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        
+        .modal.show { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 0.75rem;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            padding: 1.5rem 1.5rem 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        
+        .modal-footer {
+            padding: 1rem 1.5rem 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--success-color);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 3000;
+            font-weight: 500;
+        }
+        
+        .toast.show { transform: translateX(0); }
+        .toast.error { background: var(--danger-color); }
+        .toast.warning { background: var(--warning-color); }
+        .toast.info { background: var(--primary-color); }
+        
+        /* Timeline oversigt i rapporter */
+        .report-timeline {
+            background: var(--gray-50);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .report-timeline h3 {
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .timeline-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .timeline-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--primary-color);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .timeline-item.planned { border-left-color: var(--status-planned); }
+        .timeline-item.in-progress { border-left-color: var(--status-progress); }
+        .timeline-item.completed { border-left-color: var(--status-completed); }
+        
+        .timeline-item-title {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.25rem;
+        }
+        
+        .timeline-item-meta {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+        
+        /* 🎨 PERFEKT PDF RAPPORT - ENSARTEDE TABELBREDDER! */
+        @media print {
+            * { 
+                -webkit-print-color-adjust: exact !important; 
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            @page {
+                margin: 20mm 15mm;
+                size: A4;
+                
+                /* 📋 SIDEHOVED */
+                @top-center {
+                    content: "SWITZEA ApS - " var(--project-name);
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    font-size: 10pt;
+                    font-weight: 600;
+                    color: #2563eb;
+                    border-bottom: 1px solid #e2e8f0;
+                    padding-bottom: 2mm;
+                    margin-bottom: 5mm;
+                }
+                
+                /* 📄 SIDEFOD */
+                @bottom-left {
+                    content: "Genereret den " counter(page);
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    font-size: 9pt;
+                    color: #64748b;
+                }
+                
+                @bottom-center {
+                    content: "Side " counter(page) " af " counter(pages);
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    font-size: 9pt;
+                    font-weight: 600;
+                    color: #1e293b;
+                }
+                
+                @bottom-right {
+                    content: "SWITZEA ApS";
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    font-size: 9pt;
+                    color: #64748b;
+                }
+            }
+            
+            html, body {
+                width: 210mm !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+                background: white !important;
+                font-family: 'Segoe UI', Arial, sans-serif !important;
+                font-size: 10pt !important;
+                line-height: 1.4 !important;
+                color: #1a1a1a !important;
+            }
+            
+            /* Skjul alle UI elementer */
+            .header, 
+            .main-container, 
+            .modal,
+            .toast,
+            .report-close,
+            .report-controls { 
+                display: none !important; 
+            }
+            
+            /* Report container bliver hele siden */
+            .report-container { 
+                display: block !important; 
+                position: static !important;
+                width: 100% !important;
+                height: auto !important;
+                max-width: none !important;
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                padding: 0 !important;
+                background: white !important;
+                overflow: visible !important;
+            }
+            
+            /* 🎨 FLOT FORSIDE MED BRANDING - FØRSTE SIDE UDEN SIDEHOVED */
+            .report-header {
+                margin: 0 !important;
+                padding: 25mm 0 15mm 0 !important;
+                border-bottom: none !important;
+                text-align: center !important;
+                position: relative;
+                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+                color: white !important;
+                page-break-after: avoid;
+                height: 80mm !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                margin-left: -15mm !important;
+                margin-right: -15mm !important;
+                margin-top: -20mm !important;
+            }
+            
+            .report-header::after {
+                content: '';
+                position: absolute;
+                bottom: -8mm;
+                left: 0;
+                width: 100%;
+                height: 8mm;
+                background: linear-gradient(180deg, rgba(37, 99, 235, 0.15) 0%, transparent 100%);
+            }
+            
+            .report-logo {
+                font-size: 36pt !important;
+                font-weight: 900 !important;
+                color: white !important;
+                margin-bottom: 8mm !important;
+                letter-spacing: 2px !important;
+                text-transform: uppercase !important;
+                text-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+            }
+            
+            #reportTitle {
+                font-size: 20pt !important;
+                font-weight: 600 !important;
+                color: white !important;
+                margin-bottom: 4mm !important;
+                letter-spacing: 0.8px !important;
+                text-shadow: 0 1px 4px rgba(0,0,0,0.2) !important;
+            }
+            
+            #reportSubtitle {
+                font-size: 13pt !important;
+                color: rgba(255, 255, 255, 0.95) !important;
+                font-weight: 300 !important;
+                letter-spacing: 0.5px !important;
+            }
+            
+            /* 🏢 PROJEKT INFO PÅ FORSIDEN */
+            .front-page-project-info {
+                background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+                border: 2px solid #cbd5e1 !important;
+                border-radius: 12px !important;
+                padding: 12mm !important;
+                margin: 15mm 0 20mm 0 !important;
+                position: relative;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+                page-break-after: avoid;
+            }
+            
+            .front-page-project-info::before {
+                content: '📋';
+                position: absolute;
+                top: 12mm;
+                right: 12mm;
+                font-size: 20pt;
+                opacity: 0.4;
+            }
+            
+            .front-page-project-info h3 {
+                font-size: 16pt !important;
+                font-weight: 700 !important;
+                color: #1e293b !important;
+                margin: 0 0 8mm 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                background: none !important;
+                text-align: center !important;
+            }
+            
+            .front-page-project-info .project-details {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 4mm !important;
+                font-size: 11pt !important;
+                line-height: 1.6 !important;
+            }
+            
+            .front-page-project-info .project-details p {
+                margin-bottom: 3mm !important;
+                padding: 2mm 0 !important;
+                border-bottom: 1px solid rgba(0,0,0,0.1) !important;
+            }
+            
+            /* 📊 STATUS OVERSIGT - NYE SIDER HAR SIDEHOVED */
+            .status-section {
+                margin: 15mm 0 !important;
+                page-break-inside: avoid;
+                page-break-before: always;
+            }
+            
+            .status-section h3 {
+                font-size: 16pt !important;
+                font-weight: 700 !important;
+                color: #1e293b !important;
+                margin: 0 0 8mm 0 !important;
+                padding: 6mm 0 4mm 10mm !important;
+                border-left: 5mm solid #2563eb !important;
+                background: linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0%, transparent 50%) !important;
+                page-break-after: avoid;
+            }
+            
+            /* Status cards - FORBEDRET LAYOUT */
+            .status-grid {
+                display: flex !important;
+                justify-content: space-between !important;
+                margin: 10mm 0 !important;
+                gap: 5mm !important;
+            }
+            
+            .status-card {
+                flex: 1 !important;
+                background: white !important;
+                border: 2px solid #e2e8f0 !important;
+                border-radius: 12px !important;
+                padding: 10mm !important;
+                text-align: center !important;
+                box-shadow: 0 4px 12px rgba(139,115,85,0.1) !important;
+                position: relative;
+            }
+            
+            .status-card:nth-child(1) {
+                border-top: 6px solid #2563eb !important;
+            }
+            
+            .status-card:nth-child(2) {
+                border-top: 6px solid #10b981 !important;
+            }
+            
+            .status-card:nth-child(3) {
+                border-top: 6px solid #3b82f6 !important;
+            }
+            
+            .status-card:nth-child(4) {
+                border-top: 6px solid #6b7280 !important;
+            }
+            
+            .status-number {
+                font-size: 28pt !important;
+                font-weight: 900 !important;
+                margin-bottom: 4mm !important;
+                color: #1e293b !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+            }
+            
+            .status-label {
+                font-size: 10pt !important;
+                font-weight: 700 !important;
+                color: #64748b !important;
+                text-transform: uppercase !important;
+                letter-spacing: 1px !important;
+            }
+            
+            /* 📊 FREMGANGS BAR - FORBEDRET */
+            .progress-bar {
+                background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%) !important;
+                color: white !important;
+                padding: 10mm !important;
+                border-radius: 12px !important;
+                text-align: center !important;
+                font-size: 16pt !important;
+                font-weight: 700 !important;
+                margin: 12mm 0 !important;
+                box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4) !important;
+                -webkit-print-color-adjust: exact !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+            }
+            
+            /* 📅 TIDSPLAN OVERSIGT - FORBEDRET */
+            .report-timeline {
+                background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+                border: 3px solid #0ea5e9 !important;
+                border-radius: 15px !important;
+                padding: 12mm !important;
+                margin: 15mm 0 !important;
+                position: relative;
+                page-break-inside: avoid;
+                box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2) !important;
+            }
+            
+            .report-timeline::before {
+                content: '📅 TIDSPLAN OVERSIGT';
+                position: absolute;
+                top: -12pt;
+                left: 10mm;
+                background: white;
+                padding: 2mm 6mm;
+                font-size: 12pt;
+                font-weight: 800;
+                color: #0ea5e9;
+                letter-spacing: 1.5px;
+                border-radius: 20px;
+                box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2) !important;
+            }
+            
+            .report-timeline h3 {
+                font-size: 14pt !important;
+                font-weight: 700 !important;
+                color: #0369a1 !important;
+                margin: 0 0 8mm 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                background: none !important;
+                text-align: center !important;
+            }
+            
+            .timeline-overview {
+                display: block !important;
+            }
+            
+            .timeline-item {
+                background: white !important;
+                border: 2px solid #cbd5e1 !important;
+                border-radius: 10px !important;
+                margin-bottom: 6mm !important;
+                padding: 6mm !important;
+                page-break-inside: avoid;
+                box-shadow: 0 3px 8px rgba(0,0,0,0.1) !important;
+                border-left-width: 6px !important;
+            }
+            
+            .timeline-item.planned { border-left-color: #6b7280 !important; }
+            .timeline-item.in-progress { border-left-color: #3b82f6 !important; }
+            .timeline-item.completed { border-left-color: #10b981 !important; }
+            
+            .timeline-item-title {
+                font-size: 12pt !important;
+                font-weight: 700 !important;
+                color: #1e293b !important;
+                margin-bottom: 3mm !important;
+            }
+            
+            .timeline-item-meta {
+                font-size: 10pt !important;
+                color: #64748b !important;
+                line-height: 1.6 !important;
+            }
+            
+            /* 📋 ENSARTET TABELBREDDE - ALLE TABELLER ENS! */
+            .tasks-section {
+                margin: 15mm 0 !important;
+                page-break-inside: avoid;
+            }
+            
+            .tasks-section h3 {
+                font-size: 16pt !important;
+                font-weight: 700 !important;
+                color: #1e293b !important;
+                margin: 0 0 10mm 0 !important;
+                padding: 6mm 0 4mm 10mm !important;
+                border-left: 5mm solid #2563eb !important;
+                background: linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0%, transparent 50%) !important;
+                page-break-after: avoid;
+            }
+            
+            /* 🎯 ENSARTET TABELBREDDE - ALLE TABELLER IDENTISKE! */
+            .report-table,
+            table {
+                /* FAST BREDDE FOR ALLE TABELLER */
+                width: 170mm !important; /* FAST BREDDE */
+                margin: 10mm auto !important; /* CENTRERET */
+                border-collapse: separate !important;
+                border-spacing: 0 !important;
+                border: 3px solid #334155 !important;
+                border-radius: 15px !important;
+                overflow: hidden !important;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+                page-break-inside: auto;
+                /* TVUNG ENSARTET STYLING */
+                font-family: 'Segoe UI', Arial, sans-serif !important;
+                font-size: 10pt !important;
+                background: white !important;
+            }
+            
+            .report-table thead,
+            table thead {
+                background: linear-gradient(90deg, #334155 0%, #475569 100%) !important;
+                color: white !important;
+            }
+            
+            .report-table th,
+            table th {
+                background: transparent !important;
+                color: white !important;
+                padding: 6mm !important;
+                font-size: 11pt !important;
+                font-weight: 700 !important;
+                text-align: left !important;
+                border: none !important;
+                border-right: 1px solid rgba(255,255,255,0.3) !important;
+                letter-spacing: 1px !important;
+                text-transform: uppercase !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+                font-family: 'Segoe UI', Arial, sans-serif !important;
+            }
+            
+            .report-table th:last-child,
+            table th:last-child {
+                border-right: none !important;
+            }
+            
+            .report-table td,
+            table td {
+                padding: 6mm !important;
+                font-size: 10pt !important;
+                border: none !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+                border-right: 1px solid #f1f5f9 !important;
+                vertical-align: top !important;
+                background: white !important;
+                line-height: 1.5 !important;
+                font-family: 'Segoe UI', Arial, sans-serif !important;
+            }
+            
+            .report-table td:last-child,
+            table td:last-child {
+                border-right: none !important;
+            }
+            
+            .report-table tr:nth-child(even) td,
+            table tr:nth-child(even) td {
+                background: #f8fafc !important;
+            }
+            
+            .report-table tr,
+            table tr {
+                page-break-inside: avoid;
+            }
+            
+            /* 🏷️ STATUS BADGES - FORBEDRET */
+            .status-badge {
+                padding: 3mm 5mm !important;
+                border-radius: 20px !important;
+                font-size: 9pt !important;
+                font-weight: 700 !important;
+                color: white !important;
+                letter-spacing: 0.8px !important;
+                text-transform: uppercase !important;
+                display: inline-block !important;
+                box-shadow: 0 3px 8px rgba(0,0,0,0.25) !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+            }
+            
+            .status-planned { 
+                background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+            }
+            .status-progress { 
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            }
+            .status-completed { 
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            }
+            
+            /* 📝 SEKTIONER MED DANSK SKRIVEREGLER */
+            h3 {
+                font-size: 14pt !important;
+                font-weight: 700 !important;
+                color: #1e293b !important;
+                margin: 15mm 0 8mm 0 !important;
+                padding: 6mm 0 4mm 10mm !important;
+                border-left: 5mm solid #2563eb !important;
+                background: linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0%, transparent 50%) !important;
+                page-break-after: avoid;
+                position: relative;
+            }
+            
+            /* 📄 PAGE BREAKS - FORBEDRET */
+            .no-break {
+                page-break-inside: avoid !important;
+            }
+            
+            .page-break {
+                page-break-before: always !important;
+            }
+            
+            /* 🔤 TYPOGRAPHY FORBEDRINGER */
+            strong {
+                font-weight: 700 !important;
+                color: #1e293b !important;
+            }
+            
+            p {
+                margin-bottom: 3mm !important;
+                line-height: 1.6 !important;
+            }
+            
+            small {
+                font-size: 9pt !important;
+                color: #64748b !important;
+                line-height: 1.4 !important;
+            }
+            
+            /* 📋 BEDRE SPACING */
+            .report-content > div {
+                margin-bottom: 15mm !important;
+            }
+        }
+        
+        /* Screen report styles */
+        .report-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        
+        .report-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .report-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+        
+        .report-table th,
+        .report-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .report-table th {
+            background: var(--gray-50);
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .status-planned { background: var(--status-planned); }
+        .status-progress { background: var(--status-progress); }
+        .status-completed { background: var(--status-completed); }
+        
+        /* Close button for reports */
+        .report-close {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .report-close:hover {
+            background: #dc2626;
+        }
+        
+        .report-controls {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 260px 1fr;
+                gap: 1.5rem;
+            }
+        }
+        
         @media (max-width: 768px) {
-            .nav-content {
-                flex-direction: column;
-                gap: 8px;
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
             }
-            .nav-app-links {
-                order: -1;
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
             }
         }
-
     </style>
 </head>
 <body>
-<!-- SWITZEA Navigation Bar -->
-    <div class="switzea-nav-bar">
-        <div class="nav-content">
-            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
-                ← Tilbage til Dashboard
-            </button>
-            <div class="nav-app-links">
-                <a href="projektplanner.html">📊 Projektplanner</a>
-                <a href="referat.html">📝 Referat</a>
-                <a href="kundestatus.html">👥 Kundestatus</a>
+    <!-- Header med projekt info -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1>SWITZEA Projekt</h1>
+                <div class="project-info" id="projectInfoDisplay">
+                    <p><strong>Projekt:</strong> <span id="displayProjectName" class="placeholder">Klik 'Redigér Projekt' for at starte</span></p>
+                    <p><strong>Kunde:</strong> <span id="displayCustomerName" class="placeholder">Ikke defineret</span></p>
+                    <p><strong>Adresse:</strong> <span id="displayProjectAddress" class="placeholder">Ikke defineret</span></p>
+                    <p><strong>Kontakt:</strong> <span id="displayCustomerPhone" class="placeholder">Ikke defineret</span></p>
+                </div>
             </div>
-            <button onclick="handleLogout()" class="nav-logout-btn">
-                🚪 Log ud
-            </button>
+            <div class="header-actions">
+                <button class="btn btn-outline" onclick="openProjectModal()">
+                    📋 Redigér Projekt
+                </button>
+                <button class="btn btn-outline" onclick="generateCustomerReport()">
+                    📊 Kunde Rapport
+                </button>
+                <button class="btn btn-outline" onclick="generateCraftsmanReport()">
+                    🔨 Håndværker Rapport
+                </button>
+                <button class="btn btn-success" onclick="saveProject()">
+                    💾 Gem Projekt
+                </button>
+            </div>
         </div>
-    </div>
+    </header>
 
-    
-    <div class="app">
-        <!-- Left Sidebar -->
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
         <div class="sidebar">
-            <h1>📋 SWITZEA Referater</h1>
-            <button onclick="newMeeting()">➕ Opret nyt referat</button>
-            <div class="meetings-list" id="meetingsList"></div>
+            <h3>
+                Håndværkere
+                <button class="btn btn-primary" onclick="openCraftsmanModal()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                    + Tilføj
+                </button>
+            </h3>
+            <ul class="craftsman-list" id="craftsmanList">
+                <div class="empty-state">
+                    <p>Ingen håndværkere tilføjet endnu</p>
+                    <button class="btn btn-primary" onclick="openCraftsmanModal()">
+                        Tilføj første håndværker
+                    </button>
+                </div>
+            </ul>
         </div>
 
-        <!-- Main Content Area -->
-        <div class="main">
-            <div id="meetingContent">
-                <div class="empty-state">
-                    <h2>Velkommen til SWITZEA Referat App</h2>
-                    <p>Opret et nyt referat for at komme i gang, eller vælg et eksisterende referat fra sidebaren.</p>
+        <!-- Timeline -->
+        <div class="timeline-container">
+            <div class="timeline-header">
+                <h2 class="timeline-title">Projekt Timeline</h2>
+                <div class="timeline-controls">
+                    <div class="week-controls">
+                        <button class="btn btn-secondary" onclick="changeWeeks(-1)">-</button>
+                        <div class="week-display" id="weekDisplay">3 uger</div>
+                        <button class="btn btn-secondary" onclick="changeWeeks(1)">+</button>
+                    </div>
+                    <div>
+                        <label for="startDate" style="font-size: 0.9rem; color: var(--gray-600); margin-right: 0.5rem;">Start:</label>
+                        <input type="date" id="startDate" class="date-input" value="" onchange="updateStartDate()">
+                    </div>
                 </div>
             </div>
-
-            <!-- Right Panel with Search -->
-            <div class="right-panel">
-                <h3>🔍 Søg i referater</h3>
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Søg efter ord eller sætninger..." />
+            
+            <div class="timeline-grid">
+                <div class="grid-header" id="gridHeader">
+                    <!-- Generated by JavaScript -->
                 </div>
-                <div id="searchResults"></div>
+                <div class="grid-body" id="gridBody">
+                    <!-- Generated by JavaScript -->
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Hidden print view for PDF -->
-    <div id="printView" class="print-view"></div>
+    <!-- Project Modal -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Projekt Information</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Projekt Navn</label>
+                    <input type="text" class="form-control" id="projectName" placeholder="F.eks. Totalrenovering Villa">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kunde Navn</label>
+                    <input type="text" class="form-control" id="customerName" placeholder="F.eks. Lars og Mette Andersen">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Adresse</label>
+                    <input type="text" class="form-control" id="projectAddress" placeholder="F.eks. Rosenvej 42, 2800 Lyngby">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Telefon</label>
+                        <input type="tel" class="form-control" id="customerPhone" placeholder="F.eks. +45 12 34 56 78">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="customerEmail" placeholder="F.eks. lars@email.dk">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('projectModal')">Annullér</button>
+                <button class="btn btn-primary" onclick="saveProjectInfo()">Gem</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Craftsman Modal -->
+    <div class="modal" id="craftsmanModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Tilføj Håndværker</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Håndværker Type</label>
+                    <select class="form-control form-select" id="craftsmanType">
+                        <option value="">Vælg type...</option>
+                        <option value="Projektleder">Projektleder</option>
+                        <option value="Byggeleder">Byggeleder</option>
+                        <option value="Elektriker">Elektriker</option>
+                        <option value="VVS-montør">VVS-montør</option>
+                        <option value="Maler">Maler</option>
+                        <option value="Tømrer">Tømrer</option>
+                        <option value="Murer">Murer</option>
+                        <option value="Rengøringsassistent">Rengøringsassistent</option>
+                        <option value="Anden">Anden specialist</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Farve</label>
+                    <input type="color" class="form-control" id="craftsmanColor" value="#2563eb">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('craftsmanModal')">Annullér</button>
+                <button class="btn btn-primary" onclick="saveCraftsman()">Tilføj</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="taskModalTitle">Ny Opgave</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Opgave Titel</label>
+                    <input type="text" class="form-control" id="taskTitle" placeholder="F.eks. Opsætning af el-tavle">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Beskrivelse</label>
+                    <textarea class="form-control" id="taskDescription" rows="3" placeholder="Beskriv opgaven i detaljer..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Håndværker</label>
+                        <select class="form-control form-select" id="taskCraftsman">
+                            <option value="">Vælg håndværker...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-control form-select" id="taskStatus">
+                            <option value="planned" selected>📋 Planlagt</option>
+                            <option value="in-progress">🔄 I gang</option>
+                            <option value="completed">✅ Udført</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Varighed (dage)</label>
+                        <input type="number" class="form-control" id="taskDuration" min="0.5" step="0.5" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Start Dato</label>
+                        <input type="date" class="form-control" id="taskStartDate">
+                    </div>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--gray-500); margin-top: 0.25rem;" id="taskDayInfo"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="deleteTaskBtn" onclick="deleteCurrentTask()" style="display: none;">Slet</button>
+                <button class="btn btn-secondary" onclick="closeModal('taskModal')">Annullér</button>
+                <button class="btn btn-primary" onclick="saveTask()">Gem</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Container -->
+    <div class="report-container" id="reportContainer">
+        <button class="report-close" onclick="closeReport()">×</button>
+        <div class="report-header">
+            <div class="report-logo">SWITZEA ApS</div>
+            <h2 id="reportTitle">Kunde status rapport</h2>
+            <p id="reportSubtitle">Genereret den <span id="reportDate"></span></p>
+        </div>
+        <div id="reportContent">
+            <!-- Generated by JavaScript -->
+        </div>
+        <div class="report-controls">
+            <button class="btn btn-success" onclick="generateCurrentReport()" style="margin-right: 1rem;" id="regenerateBtn">🔄 Generer ny rapport</button>
+            <button class="btn btn-primary" onclick="window.print()">📄 Print ensartede tabeller</button>
+            <button class="btn btn-secondary" onclick="closeReport()" style="margin-left: 1rem;">Luk</button>
+        </div>
+    </div>
 
     <script>
-        // Data storage
-        let meetings = [];
-        let currentMeetingId = null;
-        let currentSearchTerm = '';
-
-        // Create new meeting
-        function newMeeting() {
-            const id = Date.now();
-            const today = new Date().toISOString().split('T')[0];
-            const data = {
-                id,
-                title: 'Statusmøde ' + new Date().toLocaleDateString('da-DK'),
-                date: today,
-                participants: '',
-                referent: '',
-                agenda: [
-                    { title: 'Punkt 1: Dagsorden', content: '' },
-                    { title: 'Punkt 2: Projekter – status og opgaver', content: '' },
-                    { title: 'Punkt 3: Effektivisering af tilbudsgivning', content: '' },
-                    { title: 'Punkt 4: Program/system for SWITZEA ApS', content: '' },
-                    { title: 'Punkt 5: Visitkort og profiltøj', content: '' },
-                    { title: 'Punkt 6: Eventuelt', content: '' },
-                    { title: 'Punkt 7: Næste statusmøde', content: '' }
-                ],
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            meetings.unshift(data);
-            saveMeetingsLocal();
-            renderMeetings();
-            openMeeting(id);
+        // SWITZEA Projekt - ENSARTEDE TABELBREDDER
+        
+        // Application State
+        const app = {
+            project: {
+                name: "",
+                customer: "",
+                address: "",
+                phone: "",
+                email: "",
+                startDate: getCurrentDate()
+            },
+            craftsmen: [],
+            tasks: [],
+            weeks: 3,
+            currentEditingTask: null,
+            lastReportType: 'customer'
+        };
+        
+        // Get current date in YYYY-MM-DD format
+        function getCurrentDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
-
-        // Parse agenda from pasted text
-        function parseAgendaFromText(text) {
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            const agenda = [];
-
-            lines.forEach(line => {
-                const match = line.match(/^(\d+|punkt\s*\d+)[.:)\-\s]*/i);
-                if (match) {
-                    const title = line.replace(/^(\d+|punkt\s*\d+)[.:)\-\s]*/i, '').trim();
-                    if (title) {
-                        agenda.push({
-                            title: title,
-                            content: ''
-                        });
-                    }
-                } else if (line.length > 0) {
-                    agenda.push({
-                        title: line,
-                        content: ''
-                    });
-                }
-            });
-
-            return agenda.length > 0 ? agenda : null;
-        }
-
-        // Apply parsed agenda to current meeting
-        function applyParsedAgenda() {
-            const agendaInput = document.getElementById('agendaInputText');
-            const text = agendaInput.value.trim();
-
-            if (!text) {
-                alert('Indtast venligst en dagsorden');
-                return;
+        
+        // Utility Functions
+        function formatDate(date, format = 'YYYY-MM-DD') {
+            if (!date) return '';
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            
+            if (format === 'DD/MM/YYYY') {
+                return `${day}/${month}/${year}`;
             }
-
-            const parsedAgenda = parseAgendaFromText(text);
-
-            if (!parsedAgenda || parsedAgenda.length === 0) {
-                alert('Kunne ikke parse dagsordenen. Prøv at formatere det med numre (fx "1. Punkt", "2. Andet punkt")');
-                return;
-            }
-
-            const meeting = meetings.find(m => m.id === currentMeetingId);
-            if (!meeting) return;
-
-            meeting.agenda = parsedAgenda;
-            saveMeetingsLocal();
-
-            openMeeting(currentMeetingId);
-
-            alert(`✅ Dagsorden opdateret med ${parsedAgenda.length} punkter!`);
+            return `${year}-${month}-${day}`;
         }
-
-        // Render meetings in left sidebar
-        function renderMeetings() {
-            const listDiv = document.getElementById('meetingsList');
-            listDiv.innerHTML = '';
-
-            if (meetings.length === 0) {
-                listDiv.innerHTML = '<p style="padding: 10px; color: #999; text-align: center;">Ingen referater endnu</p>';
-                return;
-            }
-
-            meetings.forEach(m => {
-                const div = document.createElement('div');
-                div.className = 'meeting';
-                if (m.id === currentMeetingId) {
-                    div.classList.add('active');
-                }
-                div.innerHTML = `<strong>${m.title}</strong><br><small style="color: #666;">${m.date}</small>`;
-                div.onclick = () => openMeeting(m.id);
-                listDiv.appendChild(div);
-            });
+        
+        function parseDate(dateString) {
+            if (!dateString) return new Date();
+            return new Date(dateString + 'T00:00:00');
         }
-
-        // Open and display a meeting
-        function openMeeting(id, highlightPointIndex = null) {
-            currentMeetingId = id;
-            const meeting = meetings.find(x => x.id === id);
-            if (!meeting) return;
-
-            if (meeting.participants === undefined) meeting.participants = '';
-            if (meeting.referent === undefined) meeting.referent = '';
-
-            const contentDiv = document.getElementById('meetingContent');
-            contentDiv.innerHTML = `
-                <div class='meeting-header'>
-                    <h2>${meeting.title}</h2>
-                    <p>📅 ${meeting.date}</p>
-                </div>
-
-                <div class="metadata-fields">
-                    <label>👥 Deltagere:</label>
-                    <textarea id="participantsField" placeholder="Indtast navne på deltagere, fx: Anna, Bo, Dorthe">${meeting.participants || ''}</textarea>
-
-                    <label>✍️ Referent:</label>
-                    <input type="text" id="referentField" placeholder="Navn på referent" value="${meeting.referent || ''}" />
-                </div>
-
-                <div class="agenda-input-section">
-                    <label>📝 Indsæt ny dagsorden (overskriver eksisterende punkter):</label>
-                    <textarea id="agendaInputText" placeholder="Indsæt dagsorden her, fx:\n1. Velkommen\n2. Status på projekter\n3. Eventuelt"></textarea>
-                    <button onclick="applyParsedAgenda()">🔄 Opdater dagsorden</button>
-                    <div class="help-text">Tip: Formater med numre (1., 2., etc.) eller "Punkt 1:", "Punkt 2:" for bedst resultat</div>
-                </div>
-            `;
-
-            meeting.agenda.forEach((point, i) => {
-                const div = document.createElement('div');
-                div.className = 'agenda-point';
-                div.id = 'point-' + i;
-
-                if (highlightPointIndex === i) {
-                    div.style.background = '#fff9c4';
-                    div.style.borderLeft = '4px solid #fbc02d';
+        
+        function addDays(date, days) {
+            const result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+        
+        function getWeekdayName(date) {
+            const days = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag'];
+            return days[date.getDay()];
+        }
+        
+        function isWeekend(date) {
+            const day = date.getDay();
+            return day === 0 || day === 6;
+        }
+        
+        function isToday(date) {
+            const today = new Date();
+            return formatDate(date) === formatDate(today);
+        }
+        
+        function calculateWorkDay(startDate, targetDate) {
+            let workDay = 1;
+            const current = new Date(startDate);
+            const target = new Date(targetDate);
+            
+            while (formatDate(current) < formatDate(target)) {
+                if (!isWeekend(current)) {
+                    workDay++;
                 }
-
-                div.innerHTML = `
-                    <h4>${point.title}</h4>
-                    <textarea id='a${i}' placeholder='Skriv referat indhold her...'>${point.content}</textarea>
+                current.setDate(current.getDate() + 1);
+            }
+            
+            return workDay;
+        }
+        
+        function getDateFromWorkDay(startDate, workDay) {
+            let current = new Date(startDate);
+            let currentWorkDay = 1;
+            
+            if (workDay === 1) return current;
+            
+            while (currentWorkDay < workDay) {
+                current.setDate(current.getDate() + 1);
+                if (!isWeekend(current)) {
+                    currentWorkDay++;
+                }
+            }
+            
+            return current;
+        }
+        
+        // Initialize App
+        function initApp() {
+            renderAll();
+            updateProjectDisplay();
+            showToast('🎯 SWITZEA Projekt er klar til brug!', 'success');
+        }
+        
+        // Update project display in header
+        function updateProjectDisplay() {
+            const nameEl = document.getElementById('displayProjectName');
+            const customerEl = document.getElementById('displayCustomerName');
+            const addressEl = document.getElementById('displayProjectAddress');
+            const phoneEl = document.getElementById('displayCustomerPhone');
+            
+            nameEl.textContent = app.project.name || 'Klik \'Redigér Projekt\' for at starte';
+            nameEl.className = app.project.name ? '' : 'placeholder';
+            
+            customerEl.textContent = app.project.customer || 'Ikke defineret';
+            customerEl.className = app.project.customer ? '' : 'placeholder';
+            
+            addressEl.textContent = app.project.address || 'Ikke defineret';
+            addressEl.className = app.project.address ? '' : 'placeholder';
+            
+            phoneEl.textContent = app.project.phone || 'Ikke defineret';
+            phoneEl.className = app.project.phone ? '' : 'placeholder';
+        }
+        
+        // Render Functions
+        function renderAll() {
+            renderCraftsmen();
+            renderTimeline();
+            updateWeekDisplay();
+            updateProjectDisplay();
+        }
+        
+        function renderCraftsmen() {
+            const list = document.getElementById('craftsmanList');
+            
+            if (app.craftsmen.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <p>Ingen håndværkere tilføjet endnu</p>
+                        <button class="btn btn-primary" onclick="openCraftsmanModal()">
+                            Tilføj første håndværker
+                        </button>
+                    </div>
                 `;
-                contentDiv.appendChild(div);
-            });
-
-            const buttonContainer = document.createElement('div');
-            buttonContainer.style.marginTop = '20px';
-            buttonContainer.className = 'no-print';
-
-            const saveBtn = document.createElement('button');
-            saveBtn.textContent = '💾 Gem referat';
-            saveBtn.onclick = () => saveMeeting(meeting.id);
-
-            const exportWordBtn = document.createElement('button');
-            exportWordBtn.textContent = '📄 Download Word';
-            exportWordBtn.className = 'btn-export';
-            exportWordBtn.onclick = () => exportToWord(meeting.id);
-
-            const exportPdfBtn = document.createElement('button');
-            exportPdfBtn.textContent = '📑 Download PDF';
-            exportPdfBtn.className = 'btn-pdf';
-            exportPdfBtn.onclick = () => exportToPDF(meeting.id);
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = '🗑️ Slet referat';
-            deleteBtn.style.background = '#d32f2f';
-            deleteBtn.onclick = () => deleteMeeting(meeting.id);
-
-            buttonContainer.appendChild(saveBtn);
-            buttonContainer.appendChild(exportWordBtn);
-            buttonContainer.appendChild(exportPdfBtn);
-            buttonContainer.appendChild(deleteBtn);
-            contentDiv.appendChild(buttonContainer);
-
-            if (highlightPointIndex !== null) {
-                setTimeout(() => {
-                    const element = document.getElementById('point-' + highlightPointIndex);
-                    if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
+                return;
             }
-
-            renderMeetings();
+            
+            list.innerHTML = app.craftsmen.map(craftsman => `
+                <li class="craftsman-item" draggable="true" data-id="${craftsman.id}">
+                    <span class="craftsman-name">${craftsman.name}</span>
+                    <button class="delete-btn" onclick="deleteCraftsman('${craftsman.id}')" title="Slet håndværker">
+                        ×
+                    </button>
+                </li>
+            `).join('');
         }
-
-        // Export to Word - FORBEDRET DESIGN
-        function exportToWord(id) {
-            saveMeeting(id);
-
-            const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
-
-            const wordContent = `
-                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head>
-                    <meta charset='utf-8'>
-                    <title>${meeting.title}</title>
-                    <style>
-                        body { 
-                            font-family: 'Calibri', 'Arial', sans-serif; 
-                            line-height: 1.6;
-                            max-width: 800px;
-                            margin: 30px auto;
-                            padding: 30px;
-                            color: #333;
-                        }
-                        .header {
-                            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-                            padding: 30px;
-                            border-radius: 12px;
-                            text-align: center;
-                            margin-bottom: 30px;
-                            border: 3px solid #1976d2;
-                        }
-                        .logo {
-                            font-size: 32px;
-                            font-weight: 800;
-                            color: #0d47a1;
-                            margin-bottom: 15px;
-                            letter-spacing: 2px;
-                        }
-                        h1 {
-                            color: #1976d2;
-                            font-size: 28px;
-                            margin: 15px 0;
-                            font-weight: 700;
-                        }
-                        .metadata {
-                            background: #f8fbfd;
-                            padding: 25px;
-                            border-radius: 10px;
-                            margin: 25px 0;
-                            border-left: 6px solid #1976d2;
-                            display: grid;
-                            grid-template-columns: 1fr 1fr;
-                            gap: 20px;
-                        }
-                        .metadata-full {
-                            grid-column: 1 / -1;
-                        }
-                        .metadata-item {
-                            background: white;
-                            padding: 15px;
-                            border-radius: 8px;
-                            border: 1px solid #e3f2fd;
-                        }
-                        .metadata-label {
-                            font-weight: 700;
-                            color: #1565c0;
-                            font-size: 14px;
-                            margin-bottom: 8px;
-                            text-transform: uppercase;
-                            letter-spacing: 0.5px;
-                        }
-                        .metadata-value {
-                            color: #333;
-                            font-size: 16px;
-                            line-height: 1.4;
-                        }
-                        .agenda-overview {
-                            background: linear-gradient(135deg, #fff8e1, #ffecb3);
-                            padding: 25px;
-                            border-radius: 10px;
-                            margin: 30px 0;
-                            border-left: 6px solid #ffa726;
-                        }
-                        .agenda-overview h3 {
-                            color: #e65100;
-                            font-size: 22px;
-                            margin-bottom: 20px;
-                            font-weight: 700;
-                            text-align: center;
-                        }
-                        .agenda-list {
-                            list-style: none;
-                            padding: 0;
-                            margin: 0;
-                            display: grid;
-                            gap: 12px;
-                        }
-                        .agenda-list li {
-                            background: white;
-                            padding: 12px 18px;
-                            border-radius: 6px;
-                            border-left: 4px solid #ff9800;
-                            font-weight: 600;
-                            color: #bf360c;
-                        }
-                        .section-divider {
-                            text-align: center;
-                            margin: 40px 0;
-                            position: relative;
-                        }
-                        .section-title {
-                            color: #1565c0;
-                            font-size: 24px;
-                            font-weight: 700;
-                            background: white;
-                            padding: 0 25px;
-                            display: inline-block;
-                        }
-                        .agenda-item {
-                            margin-bottom: 30px;
-                            page-break-inside: avoid;
-                            background: white;
-                            border-radius: 10px;
-                            overflow: hidden;
-                            border: 1px solid #e3f2fd;
-                        }
-                        .agenda-title {
-                            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-                            padding: 18px 25px;
-                            font-weight: 700;
-                            font-size: 18px;
-                            color: #0d47a1;
-                            border-bottom: 3px solid #1976d2;
-                        }
-                        .agenda-content {
-                            padding: 25px;
-                            white-space: pre-wrap;
-                            line-height: 1.7;
-                            min-height: 50px;
-                            color: #444;
-                            font-size: 15px;
-                        }
-                        .footer {
-                            margin-top: 50px;
-                            padding: 25px;
-                            border-top: 3px solid #e3f2fd;
-                            text-align: center;
-                            background: linear-gradient(135deg, #f8fbfd, #e3f2fd);
-                            border-radius: 10px;
-                        }
-                        .footer-content {
-                            color: #1565c0;
-                            font-weight: 600;
-                            font-size: 14px;
-                        }
-                        .footer-date {
-                            color: #666;
-                            font-size: 12px;
-                            margin-top: 8px;
-                        }
+        
+        function renderTimeline() {
+            renderTimelineHeader();
+            renderTimelineBody();
+        }
+        
+        function renderTimelineHeader() {
+            const header = document.getElementById('gridHeader');
+            const startDate = parseDate(app.project.startDate);
+            const totalDays = app.weeks * 5;
+            
+            let headerHtml = '<div class="grid-header-cell">Håndværkere</div>';
+            
+            for (let i = 0; i < totalDays; i++) {
+                const date = getDateFromWorkDay(startDate, i + 1);
+                const dayName = getWeekdayName(date).slice(0, 3);
+                const dayDate = formatDate(date, 'DD/MM/YYYY').slice(0, 5);
+                
+                let classes = '';
+                if (isWeekend(date)) classes += ' weekend';
+                if (isToday(date)) classes += ' today';
+                
+                headerHtml += `
+                    <div class="grid-header-cell">
+                        <div class="day-header${classes}">
+                            <div class="day-name">${dayName}</div>
+                            <div class="day-date">${dayDate}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            header.innerHTML = headerHtml;
+            header.style.gridTemplateColumns = `200px repeat(${totalDays}, 120px)`;
+        }
+        
+        function renderTimelineBody() {
+            const body = document.getElementById('gridBody');
+            const startDate = parseDate(app.project.startDate);
+            const totalDays = app.weeks * 5;
+            
+            if (app.craftsmen.length === 0) {
+                body.innerHTML = `
+                    <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--gray-500);">
+                        <p>Tilføj håndværkere for at se tidslinjen</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let bodyHtml = '';
+            
+            app.craftsmen.forEach(craftsman => {
+                bodyHtml += '<div class="grid-row">';
+                
+                bodyHtml += `
+                    <div class="craftsman-cell" style="border-left-color: ${craftsman.color}">
+                        ${craftsman.name}
+                    </div>
+                `;
+                
+                for (let i = 0; i < totalDays; i++) {
+                    const date = getDateFromWorkDay(startDate, i + 1);
+                    const dateStr = formatDate(date);
                     
-        /* SWITZEA Navigation Bar */
-        .switzea-nav-bar {
-            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
-            color: white;
-            padding: 12px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .nav-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-back-btn, .nav-logout-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .nav-back-btn:hover, .nav-logout-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .nav-app-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        .nav-app-links a {
-            color: white;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-
-        .nav-app-links a:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
-        @media (max-width: 768px) {
-            .nav-content {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .nav-app-links {
-                order: -1;
-            }
-        }
-
-    </style>
-                </head>
-                <body>
-<!-- SWITZEA Navigation Bar -->
-    <div class="switzea-nav-bar">
-        <div class="nav-content">
-            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
-                ← Tilbage til Dashboard
-            </button>
-            <div class="nav-app-links">
-                <a href="projektplanner.html">📊 Projektplanner</a>
-                <a href="referat.html">📝 Referat</a>
-                <a href="kundestatus.html">👥 Kundestatus</a>
-            </div>
-            <button onclick="handleLogout()" class="nav-logout-btn">
-                🚪 Log ud
-            </button>
-        </div>
-    </div>
-
-    
-                    <div class="header">
-                        <div class="logo">SWITZEA ApS</div>
-                        <h1>${meeting.title}</h1>
-                    </div>
-
-                    <div class="metadata">
-                        <div class="metadata-item">
-                            <div class="metadata-label">📅 Dato</div>
-                            <div class="metadata-value">${meeting.date}</div>
-                        </div>
-                        <div class="metadata-item">
-                            <div class="metadata-label">🕐 Oprettet</div>
-                            <div class="metadata-value">${new Date(meeting.createdAt).toLocaleDateString('da-DK')}</div>
-                        </div>
-                        ${meeting.participants ? `
-                        <div class="metadata-item metadata-full">
-                            <div class="metadata-label">👥 Deltagere</div>
-                            <div class="metadata-value">${meeting.participants}</div>
-                        </div>` : ''}
-                        ${meeting.referent ? `
-                        <div class="metadata-item ${meeting.participants ? '' : 'metadata-full'}">
-                            <div class="metadata-label">✍️ Referent</div>
-                            <div class="metadata-value">${meeting.referent}</div>
-                        </div>` : ''}
-                    </div>
-
-                    <div class="agenda-overview">
-                        <h3>📋 Agendaoversigt</h3>
-                        <ul class="agenda-list">
-                            ${meeting.agenda.map((point, index) => `
-                                <li>${index + 1}. ${point.title}</li>
-                            `).join('')}
-                        </ul>
-                    </div>
-
-                    <div class="section-divider">
-                        <div class="section-title">📝 Detaljerede punkter</div>
-                    </div>
-
-                    ${meeting.agenda.map(point => `
-                        <div class="agenda-item">
-                            <div class="agenda-title">${point.title}</div>
-                            <div class="agenda-content">${point.content || '<em>Intet indhold</em>'}</div>
-                        </div>
-                    `).join('')}
-
-                    <div class="footer">
-                        <div class="footer-content">SWITZEA Referat App</div>
-                        <div class="footer-date">Genereret ${new Date().toLocaleDateString('da-DK')}</div>
-                    </div>
-                </body>
-                </html>
-            `;
-
-            const blob = new Blob([wordContent], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${meeting.title.replace(/[^a-z0-9æøå ]/gi, '_')}_${meeting.date}.doc`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-
-        // Export to PDF - FORBEDRET DESIGN
-        function exportToPDF(id) {
-            saveMeeting(id);
-
-            const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
-
-            const printDiv = document.getElementById('printView');
-            printDiv.innerHTML = `
-                <div class="print-header">
-                    <div class="print-logo">SWITZEA ApS</div>
-                    <h1 class="print-title">${meeting.title}</h1>
-                </div>
-
-                <div class="print-metadata">
-                    <div class="print-metadata-item">
-                        <div class="print-metadata-label">📅 Dato</div>
-                        <div class="print-metadata-value">${meeting.date}</div>
-                    </div>
-                    <div class="print-metadata-item">
-                        <div class="print-metadata-label">🕐 Oprettet</div>
-                        <div class="print-metadata-value">${new Date(meeting.createdAt).toLocaleDateString('da-DK')}</div>
-                    </div>
-                    ${meeting.participants ? `
-                    <div class="print-metadata-item print-metadata-full">
-                        <div class="print-metadata-label">👥 Deltagere</div>
-                        <div class="print-metadata-value">${meeting.participants}</div>
-                    </div>` : ''}
-                    ${meeting.referent ? `
-                    <div class="print-metadata-item ${meeting.participants ? '' : 'print-metadata-full'}">
-                        <div class="print-metadata-label">✍️ Referent</div>
-                        <div class="print-metadata-value">${meeting.referent}</div>
-                    </div>` : ''}
-                </div>
-
-                <div class="print-agenda-overview">
-                    <h3>📋 Agendaoversigt</h3>
-                    <ul class="print-agenda-list">
-                        ${meeting.agenda.map((point, index) => `
-                            <li>${index + 1}. ${point.title}</li>
-                        `).join('')}
-                    </ul>
-                </div>
-
-                <div class="print-section-divider">
-                    <div class="print-section-title">📝 Detaljerede punkter</div>
-                </div>
-
-                ${meeting.agenda.map(point => `
-                    <div class="print-agenda-item">
-                        <div class="print-agenda-title">${point.title}</div>
-                        <div class="print-agenda-content">${point.content || '<em>Intet indhold</em>'}</div>
-                    </div>
-                `).join('')}
-
-                <div class="print-footer">
-                    <div class="print-footer-content">SWITZEA Referat App</div>
-                    <div class="print-footer-date">Genereret ${new Date().toLocaleDateString('da-DK')}</div>
-                </div>
-            `;
-
-            setTimeout(() => {
-                window.print();
-            }, 100);
-        }
-
-        // Save meeting
-        function saveMeeting(id) {
-            const meeting = meetings.find(m => m.id === id);
-            if (!meeting) return;
-
-            const participantsField = document.getElementById('participantsField');
-            const referentField = document.getElementById('referentField');
-            if (participantsField) meeting.participants = participantsField.value;
-            if (referentField) meeting.referent = referentField.value;
-
-            meeting.agenda.forEach((p, i) => {
-                const textarea = document.getElementById(`a${i}`);
-                if (textarea) {
-                    p.content = textarea.value;
-                }
-            });
-
-            meeting.updatedAt = new Date().toISOString();
-            saveMeetingsLocal();
-
-            if (currentSearchTerm) {
-                performSearch(currentSearchTerm);
-            }
-
-            alert('✅ Referat gemt lokalt!');
-        }
-
-        // Delete meeting
-        function deleteMeeting(id) {
-            if (!confirm('Er du sikker på at du vil slette dette referat?')) {
-                return;
-            }
-
-            meetings = meetings.filter(m => m.id !== id);
-            saveMeetingsLocal();
-
-            const contentDiv = document.getElementById('meetingContent');
-            contentDiv.innerHTML = `
-                <div class="empty-state">
-                    <h2>Referat slettet</h2>
-                    <p>Vælg et andet referat eller opret et nyt.</p>
-                </div>
-            `;
-
-            currentMeetingId = null;
-            renderMeetings();
-
-            if (currentSearchTerm) {
-                performSearch(currentSearchTerm);
-            }
-        }
-
-        // Advanced search functionality
-        function performSearch(term) {
-            const resultsContainer = document.getElementById('searchResults');
-            resultsContainer.innerHTML = '';
-
-            if (!term || term.trim() === '') {
-                resultsContainer.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Indtast søgeord</p>';
-                return;
-            }
-
-            const searchTerm = term.toLowerCase().trim();
-            const results = [];
-
-            meetings.forEach(meeting => {
-                if (meeting.title.toLowerCase().includes(searchTerm)) {
-                    results.push({
-                        meetingId: meeting.id,
-                        meetingTitle: meeting.title,
-                        meetingDate: meeting.date,
-                        location: 'Titel',
-                        snippet: meeting.title,
-                        pointIndex: null
-                    });
-                }
-
-                if (meeting.participants && meeting.participants.toLowerCase().includes(searchTerm)) {
-                    results.push({
-                        meetingId: meeting.id,
-                        meetingTitle: meeting.title,
-                        meetingDate: meeting.date,
-                        location: 'Deltagere',
-                        snippet: meeting.participants,
-                        pointIndex: null
-                    });
-                }
-
-                meeting.agenda.forEach((point, index) => {
-                    if (point.content.toLowerCase().includes(searchTerm)) {
-                        const contentLower = point.content.toLowerCase();
-                        const position = contentLower.indexOf(searchTerm);
-                        const start = Math.max(0, position - 40);
-                        const end = Math.min(point.content.length, position + searchTerm.length + 40);
-                        let snippet = point.content.substring(start, end);
-
-                        if (start > 0) snippet = '...' + snippet;
-                        if (end < point.content.length) snippet = snippet + '...';
-
-                        const regex = new RegExp(`(${searchTerm})`, 'gi');
-                        snippet = snippet.replace(regex, '<span class="highlight">$1</span>');
-
-                        results.push({
-                            meetingId: meeting.id,
-                            meetingTitle: meeting.title,
-                            meetingDate: meeting.date,
-                            location: point.title,
-                            snippet: snippet,
-                            pointIndex: index
-                        });
+                    let classes = 'day-cell';
+                    if (isWeekend(date)) classes += ' weekend';
+                    if (isToday(date)) classes += ' today';
+                    
+                    bodyHtml += `
+                        <div class="${classes}" 
+                             data-craftsman="${craftsman.id}" 
+                             data-date="${dateStr}"
+                             data-day="${i + 1}"
+                             onclick="createTask('${craftsman.id}', '${dateStr}')">
+                    `;
+                    
+                    const task = app.tasks.find(t => 
+                        t.craftsman === craftsman.id && t.date === dateStr
+                    );
+                    
+                    if (task) {
+                        bodyHtml += renderTask(task, i + 1);
                     }
+                    
+                    bodyHtml += '</div>';
+                }
+                
+                bodyHtml += '</div>';
+            });
+            
+            body.innerHTML = bodyHtml;
+            
+            document.querySelectorAll('.grid-row').forEach(row => {
+                row.style.gridTemplateColumns = `200px repeat(${totalDays}, 120px)`;
+            });
+        }
+        
+        // Task rendering
+        function renderTask(task, dayIndex) {
+            const statusClass = task.status;
+            const cellWidth = 120;
+            const taskWidth = (task.duration * cellWidth) - 4;
+            
+            return `
+                <div class="task ${statusClass}" 
+                     data-task-id="${task.id}"
+                     ondblclick="editTask('${task.id}')"
+                     draggable="true"
+                     style="width: ${taskWidth}px; right: auto;">
+                    <div class="task-title">${task.title}</div>
+                    <div class="task-meta">
+                        <span>${task.duration}d</span>
+                        <div class="task-controls">
+                            <button class="task-control-btn" onclick="event.stopPropagation(); editTask('${task.id}')" title="Redigér">
+                                ✏️
+                            </button>
+                            <button class="task-control-btn" onclick="event.stopPropagation(); deleteTask('${task.id}')" title="Slet">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Modal Functions
+        function openProjectModal() {
+            document.getElementById('projectName').value = app.project.name;
+            document.getElementById('customerName').value = app.project.customer;
+            document.getElementById('projectAddress').value = app.project.address;
+            document.getElementById('customerPhone').value = app.project.phone;
+            document.getElementById('customerEmail').value = app.project.email;
+            
+            showModal('projectModal');
+        }
+        
+        function openCraftsmanModal() {
+            document.getElementById('craftsmanType').value = '';
+            document.getElementById('craftsmanColor').value = '#2563eb';
+            showModal('craftsmanModal');
+        }
+        
+        function openTaskModal(taskId = null) {
+            app.currentEditingTask = taskId;
+            
+            populateTaskCraftsmanSelect();
+            
+            if (taskId) {
+                const task = app.tasks.find(t => t.id === taskId);
+                if (task) {
+                    document.getElementById('taskModalTitle').textContent = 'Redigér Opgave';
+                    document.getElementById('taskTitle').value = task.title;
+                    document.getElementById('taskDescription').value = task.description || '';
+                    document.getElementById('taskStatus').value = task.status;
+                    document.getElementById('taskDuration').value = task.duration;
+                    document.getElementById('taskStartDate').value = task.date;
+                    document.getElementById('deleteTaskBtn').style.display = 'block';
+                    document.getElementById('taskCraftsman').value = task.craftsman;
+                    updateTaskDayInfo();
+                }
+            } else {
+                document.getElementById('taskModalTitle').textContent = 'Ny Opgave';
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskDescription').value = '';
+                document.getElementById('taskCraftsman').value = '';
+                document.getElementById('taskStatus').value = 'planned';
+                document.getElementById('taskDuration').value = '1';
+                document.getElementById('taskStartDate').value = '';
+                document.getElementById('deleteTaskBtn').style.display = 'none';
+                document.getElementById('taskDayInfo').textContent = '';
+            }
+            
+            showModal('taskModal');
+        }
+        
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            if (modalId === 'taskModal') {
+                app.currentEditingTask = null;
+            }
+        }
+        
+        // CRUD Functions
+        function saveProjectInfo() {
+            app.project.name = document.getElementById('projectName').value;
+            app.project.customer = document.getElementById('customerName').value;
+            app.project.address = document.getElementById('projectAddress').value;
+            app.project.phone = document.getElementById('customerPhone').value;
+            app.project.email = document.getElementById('customerEmail').value;
+            
+            closeModal('projectModal');
+            updateProjectDisplay();
+            showToast('✅ Projekt information gemt', 'success');
+        }
+        
+        function saveCraftsman() {
+            const type = document.getElementById('craftsmanType').value;
+            const color = document.getElementById('craftsmanColor').value;
+            
+            if (!type) {
+                showToast('Vælg en håndværker type', 'error');
+                return;
+            }
+            
+            const craftsman = {
+                id: 'c' + Date.now(),
+                name: type,
+                color: color
+            };
+            
+            app.craftsmen.push(craftsman);
+            renderAll();
+            closeModal('craftsmanModal');
+            showToast('✅ Håndværker tilføjet', 'success');
+        }
+        
+        function saveTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const craftsman = document.getElementById('taskCraftsman').value;
+            const status = document.getElementById('taskStatus').value;
+            const duration = parseFloat(document.getElementById('taskDuration').value);
+            const date = document.getElementById('taskStartDate').value;
+            
+            if (!title || !craftsman || !date) {
+                showToast('Udfyld alle påkrævede felter', 'error');
+                return;
+            }
+            
+            const taskData = {
+                title,
+                description,
+                craftsman,
+                priority: 'medium',
+                status,
+                duration,
+                date
+            };
+            
+            if (app.currentEditingTask) {
+                const taskIndex = app.tasks.findIndex(t => t.id === app.currentEditingTask);
+                if (taskIndex !== -1) {
+                    app.tasks[taskIndex] = { ...app.tasks[taskIndex], ...taskData };
+                    showToast('✅ Opgave opdateret', 'success');
+                }
+            } else {
+                const newTask = {
+                    id: 't' + Date.now(),
+                    ...taskData
+                };
+                app.tasks.push(newTask);
+                showToast('✅ Opgave oprettet', 'success');
+            }
+            
+            renderAll();
+            closeModal('taskModal');
+        }
+        
+        function createTask(craftsmanId, date) {
+            setTimeout(() => {
+                document.getElementById('taskCraftsman').value = craftsmanId;
+                document.getElementById('taskStartDate').value = date;
+                updateTaskDayInfo();
+            }, 100);
+            
+            openTaskModal();
+        }
+        
+        function editTask(taskId) {
+            openTaskModal(taskId);
+        }
+        
+        function deleteTask(taskId) {
+            if (confirm('Er du sikker på at du vil slette denne opgave?')) {
+                app.tasks = app.tasks.filter(t => t.id !== taskId);
+                renderAll();
+                showToast('✅ Opgave slettet', 'success');
+            }
+        }
+        
+        function deleteCurrentTask() {
+            if (app.currentEditingTask) {
+                deleteTask(app.currentEditingTask);
+                closeModal('taskModal');
+            }
+        }
+        
+        function deleteCraftsman(craftsmanId) {
+            if (confirm('Er du sikker på at du vil slette denne håndværker? Alle tilhørende opgaver vil også blive slettet.')) {
+                app.craftsmen = app.craftsmen.filter(c => c.id !== craftsmanId);
+                app.tasks = app.tasks.filter(t => t.craftsman !== craftsmanId);
+                renderAll();
+                showToast('✅ Håndværker slettet', 'success');
+            }
+        }
+        
+        // Helper Functions
+        function populateTaskCraftsmanSelect() {
+            const select = document.getElementById('taskCraftsman');
+            select.innerHTML = '<option value="">Vælg håndværker...</option>';
+            
+            app.craftsmen.forEach(craftsman => {
+                const option = document.createElement('option');
+                option.value = craftsman.id;
+                option.textContent = craftsman.name;
+                select.appendChild(option);
+            });
+        }
+        
+        function updateTaskDayInfo() {
+            const dateInput = document.getElementById('taskStartDate');
+            const dayInfo = document.getElementById('taskDayInfo');
+            
+            if (dateInput.value) {
+                const startDate = parseDate(app.project.startDate);
+                const taskDate = parseDate(dateInput.value);
+                const workDay = calculateWorkDay(startDate, taskDate);
+                dayInfo.textContent = `Dette er arbejdsdag ${workDay} i projektet`;
+            } else {
+                dayInfo.textContent = '';
+            }
+        }
+        
+        function changeWeeks(delta) {
+            app.weeks = Math.max(1, Math.min(10, app.weeks + delta));
+            renderAll();
+        }
+        
+        function updateWeekDisplay() {
+            document.getElementById('weekDisplay').textContent = `${app.weeks} uger`;
+        }
+        
+        function updateStartDate() {
+            const newStartDate = document.getElementById('startDate').value;
+            if (newStartDate) {
+                app.project.startDate = newStartDate;
+                renderAll();
+                showToast('📅 Start dato opdateret', 'info');
+            }
+        }
+        
+        function saveProject() {
+            try {
+                localStorage.setItem('switzeaProject', JSON.stringify(app));
+                showToast('💾 Projekt gemt', 'success');
+            } catch (error) {
+                showToast('❌ Fejl ved gemning', 'error');
+            }
+        }
+        
+        function loadProject() {
+            if (confirm('Vil du indlæse et gemt projekt? Dette vil overskrive det nuværende projekt.')) {
+                try {
+                    const saved = localStorage.getItem('switzeaProject');
+                    if (saved) {
+                        const savedData = JSON.parse(saved);
+                        Object.assign(app, savedData);
+                        renderAll();
+                        updateProjectDisplay();
+                        document.getElementById('startDate').value = app.project.startDate;
+                        showToast('📂 Projekt indlæst', 'success');
+                    } else {
+                        showToast('Intet gemt projekt fundet', 'info');
+                    }
+                } catch (error) {
+                    showToast('❌ Fejl ved indlæsning', 'error');
+                }
+            }
+        }
+        
+        // Tidsplan oversigt generator
+        function generateTimelineOverview() {
+            if (app.tasks.length === 0) {
+                return `
+                    <div class="report-timeline no-break">
+                        <h3>Tidsplan oversigt</h3>
+                        <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                            <p>Ingen opgaver at vise endnu.</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const sortedTasks = [...app.tasks].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            return `
+                <div class="report-timeline no-break">
+                    <h3>Tidsplan oversigt</h3>
+                    <div class="timeline-overview">
+                        ${sortedTasks.map(task => {
+                            const craftsman = app.craftsmen.find(c => c.id === task.craftsman);
+                            const statusText = {
+                                'planned': 'Planlagt',
+                                'in-progress': 'I gang',
+                                'completed': 'Udført'
+                            }[task.status];
+                            
+                            return `
+                                <div class="timeline-item ${task.status} no-break">
+                                    <div class="timeline-item-title">${task.title}</div>
+                                    <div class="timeline-item-meta">
+                                        <strong>${craftsman ? craftsman.name : 'Ikke tildelt'}</strong><br>
+                                        ${formatDate(task.date, 'DD/MM/YYYY')} - ${task.duration} dag${task.duration !== 1 ? 'e' : ''}<br>
+                                        <span style="color: var(--status-${task.status})">${statusText}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Report Functions - ENSARTEDE TABELBREDDER
+        function generateCustomerReport() {
+            app.lastReportType = 'customer';
+            
+            const reportContainer = document.getElementById('reportContainer');
+            reportContainer.style.display = 'none';
+            reportContainer.innerHTML = '';
+            
+            reportContainer.innerHTML = `
+                <button class="report-close" onclick="closeReport()">×</button>
+                <div class="report-header">
+                    <div class="report-logo">SWITZEA ApS</div>
+                    <h2 id="reportTitle">Kunde status rapport</h2>
+                    <p id="reportSubtitle">Genereret den <span id="reportDate"></span></p>
+                </div>
+                <div id="reportContent">
+                    <!-- Generated by JavaScript -->
+                </div>
+                <div class="report-controls">
+                    <button class="btn btn-success" onclick="generateCurrentReport()" style="margin-right: 1rem;">🔄 Generer ny rapport</button>
+                    <button class="btn btn-primary" onclick="window.print()">📄 Print ensartede tabeller</button>
+                    <button class="btn btn-secondary" onclick="closeReport()" style="margin-left: 1rem;">Luk</button>
+                </div>
+            `;
+            
+            requestAnimationFrame(() => {
+                const reportTitle = document.getElementById('reportTitle');
+                const reportSubtitle = document.getElementById('reportSubtitle');
+                const reportDate = document.getElementById('reportDate');
+                const reportContent = document.getElementById('reportContent');
+                
+                reportTitle.textContent = 'Kunde status rapport';
+                reportSubtitle.innerHTML = `<strong>${app.project.name || 'Projekt'}</strong> - ${app.project.customer || 'Kunde'}`;
+                reportDate.textContent = formatDate(new Date(), 'DD/MM/YYYY');
+                
+                const totalTasks = app.tasks.length;
+                const completedTasks = app.tasks.filter(t => t.status === 'completed').length;
+                const inProgressTasks = app.tasks.filter(t => t.status === 'in-progress').length;
+                const plannedTasks = app.tasks.filter(t => t.status === 'planned').length;
+                
+                const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                
+                const sortedTasks = [...app.tasks].sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                reportContent.innerHTML = `
+                    <!-- PROJEKT INFO PÅ FORSIDEN -->
+                    <div class="front-page-project-info">
+                        <h3>Projekt information</h3>
+                        <div class="project-details">
+                            <p><strong>Projekt:</strong> ${app.project.name || 'Ikke defineret'}</p>
+                            <p><strong>Kunde:</strong> ${app.project.customer || 'Ikke defineret'}</p>
+                            <p><strong>Adresse:</strong> ${app.project.address || 'Ikke defineret'}</p>
+                            <p><strong>Kontakt:</strong> ${app.project.phone || 'Ikke defineret'}</p>
+                            <p><strong>Start dato:</strong> ${formatDate(app.project.startDate, 'DD/MM/YYYY')}</p>
+                            <p><strong>Varighed:</strong> ${app.weeks} uger</p>
+                        </div>
+                    </div>
+                    
+                    <!-- STATUS OVERSIGT - FØRST -->
+                    <div class="status-section">
+                        <h3>Status oversigt</h3>
+                        <div class="status-grid">
+                            <div class="status-card">
+                                <div class="status-number">${totalTasks}</div>
+                                <div class="status-label">Total opgaver</div>
+                            </div>
+                            <div class="status-card">
+                                <div class="status-number">${completedTasks}</div>
+                                <div class="status-label">Udført</div>
+                            </div>
+                            <div class="status-card">
+                                <div class="status-number">${inProgressTasks}</div>
+                                <div class="status-label">I gang</div>
+                            </div>
+                            <div class="status-card">
+                                <div class="status-number">${plannedTasks}</div>
+                                <div class="status-label">Planlagt</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            Fremgang: ${progressPercentage}% gennemført
+                        </div>
+                    </div>
+                    
+                    ${generateTimelineOverview()}
+                    
+                    ${totalTasks > 0 ? `
+                        <div class="tasks-section">
+                            <h3>Alle opgaver</h3>
+                            <table class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th>Opgave</th>
+                                        <th>Håndværker</th>
+                                        <th>Status</th>
+                                        <th>Dato</th>
+                                        <th>Varighed</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sortedTasks.map(task => {
+                                        const craftsman = app.craftsmen.find(c => c.id === task.craftsman);
+                                        const statusText = {
+                                            'planned': 'Planlagt',
+                                            'in-progress': 'I gang',
+                                            'completed': 'Udført'
+                                        }[task.status];
+                                        
+                                        return `
+                                            <tr>
+                                                <td>
+                                                    <strong>${task.title}</strong>
+                                                    ${task.description ? `<br><small>${task.description}</small>` : ''}
+                                                </td>
+                                                <td>${craftsman ? craftsman.name : 'Ikke tildelt'}</td>
+                                                <td>
+                                                    <span class="status-badge status-${task.status}">
+                                                        ${statusText}
+                                                    </span>
+                                                </td>
+                                                <td>${formatDate(task.date, 'DD/MM/YYYY')}</td>
+                                                <td>${task.duration} dag${task.duration !== 1 ? 'e' : ''}</td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : ''}
+                `;
+                
+                requestAnimationFrame(() => {
+                    reportContainer.style.display = 'block';
+                    reportContainer.scrollTop = 0;
+                    showToast('🎨 Ensartede tabeller genereret!', 'success');
                 });
             });
-
-            if (results.length === 0) {
-                resultsContainer.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Ingen resultater fundet</p>';
-                return;
-            }
-
-            results.forEach(result => {
-                const div = document.createElement('div');
-                div.className = 'search-result';
-                div.innerHTML = `
-                    <div class="search-result-title">${result.meetingTitle}</div>
-                    <div class="search-result-location">📍 ${result.location} • ${result.meetingDate}</div>
-                    <div class="search-result-snippet">${result.snippet}</div>
-                `;
-                div.onclick = () => openMeeting(result.meetingId, result.pointIndex);
-                resultsContainer.appendChild(div);
+        }
+        
+        function generateCraftsmanReport() {
+            app.lastReportType = 'craftsman';
+            
+            const reportContainer = document.getElementById('reportContainer');
+            reportContainer.style.display = 'none';
+            reportContainer.innerHTML = `
+                <button class="report-close" onclick="closeReport()">×</button>
+                <div class="report-header">
+                    <div class="report-logo">SWITZEA ApS</div>
+                    <h2 id="reportTitle">Håndværker opgave rapport</h2>
+                    <p id="reportSubtitle">Genereret den <span id="reportDate"></span></p>
+                </div>
+                <div id="reportContent">
+                    <!-- Generated by JavaScript -->
+                </div>
+                <div class="report-controls">
+                    <button class="btn btn-success" onclick="generateCurrentReport()" style="margin-right: 1rem;">🔄 Generer ny rapport</button>
+                    <button class="btn btn-primary" onclick="window.print()">📄 Print ensartede tabeller</button>
+                    <button class="btn btn-secondary" onclick="closeReport()" style="margin-left: 1rem;">Luk</button>
+                </div>
+            `;
+            
+            requestAnimationFrame(() => {
+                const reportTitle = document.getElementById('reportTitle');
+                const reportSubtitle = document.getElementById('reportSubtitle');
+                const reportDate = document.getElementById('reportDate');
+                const reportContent = document.getElementById('reportContent');
+                
+                reportTitle.textContent = 'Håndværker opgave rapport';
+                reportSubtitle.innerHTML = `<strong>${app.project.name || 'Projekt'}</strong> - opgave oversigt per håndværker`;
+                reportDate.textContent = formatDate(new Date(), 'DD/MM/YYYY');
+                
+                let contentHtml = generateTimelineOverview();
+                
+                if (app.craftsmen.length > 0) {
+                    app.craftsmen.forEach(craftsman => {
+                        const craftsmanTasks = app.tasks.filter(t => t.craftsman === craftsman.id);
+                        
+                        if (craftsmanTasks.length > 0) {
+                            const sortedCraftsmanTasks = craftsmanTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+                            
+                            contentHtml += `
+                                <div class="tasks-section">
+                                    <h3 style="border-left-color: ${craftsman.color};">${craftsman.name}</h3>
+                                    <table class="report-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Opgave</th>
+                                                <th>Status</th>
+                                                <th>Dato</th>
+                                                <th>Varighed</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${sortedCraftsmanTasks.map(task => {
+                                                const statusText = {
+                                                    'planned': 'Planlagt',
+                                                    'in-progress': 'I gang',
+                                                    'completed': 'Udført'
+                                                }[task.status];
+                                                
+                                                return `
+                                                    <tr>
+                                                        <td>
+                                                            <strong>${task.title}</strong>
+                                                            ${task.description ? `<br><small>${task.description}</small>` : ''}
+                                                        </td>
+                                                        <td>
+                                                            <span class="status-badge status-${task.status}">
+                                                                ${statusText}
+                                                            </span>
+                                                        </td>
+                                                        <td>${formatDate(task.date, 'DD/MM/YYYY')}</td>
+                                                        <td>${task.duration} dag${task.duration !== 1 ? 'e' : ''}</td>
+                                                    </tr>
+                                                `;
+                                            }).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                
+                reportContent.innerHTML = contentHtml;
+                
+                requestAnimationFrame(() => {
+                    reportContainer.style.display = 'block';
+                    reportContainer.scrollTop = 0;
+                    showToast('🔨 Ensartede tabeller genereret!', 'success');
+                });
             });
         }
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            currentSearchTerm = e.target.value;
-            performSearch(currentSearchTerm);
-        });
-
-        function saveMeetingsLocal() {
-            localStorage.setItem('switzea-referater', JSON.stringify(meetings));
-        }
-
-        function loadMeetingsLocal() {
-            const saved = localStorage.getItem('switzea-referater');
-            if (saved) {
-                try {
-                    meetings = JSON.parse(saved);
-                } catch (e) {
-                    console.error('Could not load meetings:', e);
-                    meetings = [];
-                }
-            }
-        }
-
-        window.onload = () => {
-            loadMeetingsLocal();
-            renderMeetings();
-
-            const resultsContainer = document.getElementById('searchResults');
-            resultsContainer.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Indtast søgeord</p>';
-        };
-    
-        // SWITZEA Auth Check
-        function checkSwitzeaAuth() {
-            const currentUser = localStorage.getItem('switzea_currentUser');
-            if (!currentUser) {
-                window.location.href = 'index.html';
-                return null;
-            }
-            return JSON.parse(currentUser);
-        }
-
-        function handleLogout() {
-            if (confirm('Er du sikker på at du vil logge ud?')) {
-                localStorage.removeItem('switzea_currentUser');
-                window.location.href = 'index.html';
-            }
-        }
-
-        // Check auth when page loads
-        (function() {
-            checkSwitzeaAuth();
-        })();
-
         
+        function generateCurrentReport() {
+            if (app.lastReportType === 'customer') {
+                generateCustomerReport();
+            } else {
+                generateCraftsmanReport();
+            }
+        }
+        
+        function closeReport() {
+            const reportContainer = document.getElementById('reportContainer');
+            reportContainer.style.display = 'none';
+        }
+        
+        // Toast Function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            document.getElementById('startDate').value = app.project.startDate;
+            
+            setInterval(() => {
+                if (app.craftsmen.length > 0 || app.tasks.length > 0 || app.project.name) {
+                    saveProject();
+                }
+            }, 30000);
+            
+            document.getElementById('taskStartDate').addEventListener('change', updateTaskDayInfo);
+            
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    const modalId = e.target.id;
+                    closeModal(modalId);
+                }
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeReport();
+                }
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'o') {
+                    e.preventDefault();
+                    loadProject();
+                }
+            });
+        });
+        
+        window.addEventListener('beforeunload', function(e) {
+            if (app.craftsmen.length > 0 || app.tasks.length > 0 || app.project.name) {
+                saveProject();
+            }
+        });
+        
+        console.log('🎨 SWITZEA ENSARTEDE TABELLER - Alle tabeller har nu samme bredde!');
     </script>
 </body>
 </html>
