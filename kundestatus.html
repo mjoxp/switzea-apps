@@ -548,6 +548,24 @@
     </style>
 </head>
 <body>
+<!-- SWITZEA Navigation Bar -->
+    <div class="switzea-nav-bar">
+        <div class="nav-content">
+            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
+                ← Tilbage til Dashboard
+            </button>
+            <div class="nav-app-links">
+                <a href="projektplanner.html">📊 Projektplanner</a>
+                <a href="referat.html">📝 Referat</a>
+                <a href="kundestatus.html">👥 Kundestatus</a>
+            </div>
+            <button onclick="handleLogout()" class="nav-logout-btn">
+                🚪 Log ud
+            </button>
+        </div>
+    </div>
+
+    
     <button class="toggle-sidebar-btn" id="toggleSidebar">◀</button>
     <button class="toggle-search-btn" id="toggleSearch">▶</button>
     
@@ -889,7 +907,25 @@
                 '.info-value { color: #4B5563; font-size: 11pt; }' +
                 '.status-section { background: #FFF5F0; padding: 15pt; border-radius: 4pt; margin-bottom: 20pt; border-left: 4pt solid #E87461; page-break-inside: avoid; }' +
                 '.status-section h2 { color: #B33A2C; font-size: 16pt; margin: 0 0 15pt 0; font-weight: 600; page-break-after: avoid; }' +
-                '</style></head><body>' +
+                '</style></head><body>
+<!-- SWITZEA Navigation Bar -->
+    <div class="switzea-nav-bar">
+        <div class="nav-content">
+            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
+                ← Tilbage til Dashboard
+            </button>
+            <div class="nav-app-links">
+                <a href="projektplanner.html">📊 Projektplanner</a>
+                <a href="referat.html">📝 Referat</a>
+                <a href="kundestatus.html">👥 Kundestatus</a>
+            </div>
+            <button onclick="handleLogout()" class="nav-logout-btn">
+                🚪 Log ud
+            </button>
+        </div>
+    </div>
+
+    ' +
                 '<div class="header">' +
                 '<h1>' + customer.customerName + '</h1>' +
                 '<p>📋 ' + customer.project + '</p>' +
@@ -1173,6 +1209,30 @@
             const modal = document.getElementById('customerModal');
             if (e.target === modal) closeModal();
         });
+    
+        // SWITZEA Auth Check
+        function checkSwitzeaAuth() {
+            const currentUser = localStorage.getItem('switzea_currentUser');
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            return JSON.parse(currentUser);
+        }
+
+        function handleLogout() {
+            if (confirm('Er du sikker på at du vil logge ud?')) {
+                localStorage.removeItem('switzea_currentUser');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Check auth when page loads
+        (function() {
+            checkSwitzeaAuth();
+        })();
+
+        
     </script>
 </body>
 </html>
