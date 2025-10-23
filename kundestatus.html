@@ -8,7 +8,7 @@
         * { box-sizing: border-box; }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #F3F4F6; 
+            background: #F5F1E8; 
             margin: 0; 
             padding: 0;
             color: #1F2937;
@@ -174,7 +174,7 @@
         .main { 
             flex: 1; 
             padding: 20px; 
-            background: #F3F4F6; 
+            background: #F5F1E8; 
             display: flex; 
             flex-direction: row; 
             gap: 20px;
@@ -545,92 +545,9 @@
             .modal-content { width: 95%; padding: 20px; }
             .toggle-sidebar-btn, .toggle-search-btn { display: none; }
         }
-    
-        /* SWITZEA Navigation Bar */
-        .switzea-nav-bar {
-            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
-            color: white;
-            padding: 12px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .nav-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-back-btn, .nav-logout-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .nav-back-btn:hover, .nav-logout-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .nav-app-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        .nav-app-links a {
-            color: white;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-
-        .nav-app-links a:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
-        @media (max-width: 768px) {
-            .nav-content {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .nav-app-links {
-                order: -1;
-            }
-        }
-
     </style>
 </head>
 <body>
-<!-- SWITZEA Navigation Bar -->
-    <div class="switzea-nav-bar">
-        <div class="nav-content">
-            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
-                ← Tilbage til Dashboard
-            </button>
-            <div class="nav-app-links">
-                <a href="projektplanner.html">📊 Projektplanner</a>
-                <a href="referat.html">📝 Referat</a>
-                <a href="kundestatus.html">👥 Kundestatus</a>
-            </div>
-            <button onclick="handleLogout()" class="nav-logout-btn">
-                🚪 Log ud
-            </button>
-        </div>
-    </div>
-
-    
     <button class="toggle-sidebar-btn" id="toggleSidebar">◀</button>
     <button class="toggle-search-btn" id="toggleSearch">▶</button>
     
@@ -972,90 +889,7 @@
                 '.info-value { color: #4B5563; font-size: 11pt; }' +
                 '.status-section { background: #FFF5F0; padding: 15pt; border-radius: 4pt; margin-bottom: 20pt; border-left: 4pt solid #E87461; page-break-inside: avoid; }' +
                 '.status-section h2 { color: #B33A2C; font-size: 16pt; margin: 0 0 15pt 0; font-weight: 600; page-break-after: avoid; }' +
-                '
-        /* SWITZEA Navigation Bar */
-        .switzea-nav-bar {
-            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
-            color: white;
-            padding: 12px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .nav-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-back-btn, .nav-logout-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .nav-back-btn:hover, .nav-logout-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .nav-app-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        .nav-app-links a {
-            color: white;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-
-        .nav-app-links a:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
-        @media (max-width: 768px) {
-            .nav-content {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .nav-app-links {
-                order: -1;
-            }
-        }
-
-    </style></head><body>
-<!-- SWITZEA Navigation Bar -->
-    <div class="switzea-nav-bar">
-        <div class="nav-content">
-            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
-                ← Tilbage til Dashboard
-            </button>
-            <div class="nav-app-links">
-                <a href="projektplanner.html">📊 Projektplanner</a>
-                <a href="referat.html">📝 Referat</a>
-                <a href="kundestatus.html">👥 Kundestatus</a>
-            </div>
-            <button onclick="handleLogout()" class="nav-logout-btn">
-                🚪 Log ud
-            </button>
-        </div>
-    </div>
-
-    ' +
+                '</style></head><body>' +
                 '<div class="header">' +
                 '<h1>' + customer.customerName + '</h1>' +
                 '<p>📋 ' + customer.project + '</p>' +
@@ -1339,30 +1173,6 @@
             const modal = document.getElementById('customerModal');
             if (e.target === modal) closeModal();
         });
-    
-        // SWITZEA Auth Check
-        function checkSwitzeaAuth() {
-            const currentUser = localStorage.getItem('switzea_currentUser');
-            if (!currentUser) {
-                window.location.href = 'index.html';
-                return null;
-            }
-            return JSON.parse(currentUser);
-        }
-
-        function handleLogout() {
-            if (confirm('Er du sikker på at du vil logge ud?')) {
-                localStorage.removeItem('switzea_currentUser');
-                window.location.href = 'index.html';
-            }
-        }
-
-        // Check auth when page loads
-        (function() {
-            checkSwitzeaAuth();
-        })();
-
-        
     </script>
 </body>
 </html>
