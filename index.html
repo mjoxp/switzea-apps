@@ -98,6 +98,11 @@
             transform: translateY(0);
         }
 
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .error-message {
             background: #FEE2E2;
             color: #DC2626;
@@ -155,6 +160,12 @@
             margin-top: 6px;
         }
 
+        .loading {
+            text-align: center;
+            color: #6B7280;
+            padding: 20px;
+        }
+
         @media (max-width: 480px) {
             .login-container {
                 padding: 30px 20px;
@@ -173,9 +184,8 @@
             <p>Administration Platform</p>
         </div>
 
-        <div id="errorMessage" class="error-message">
-            Forkert email eller adgangskode
-        </div>
+        <div id="errorMessage" class="error-message"></div>
+        <div id="loadingMessage" class="loading" style="display: none;">Logger ind...</div>
 
         <form id="loginForm">
             <div class="form-group">
@@ -198,16 +208,16 @@
                     required
                     autocomplete="current-password"
                 >
-                <div class="password-hint">💡 Alle test brugere har adgangskode: <code>test123</code></div>
+                <div class="password-hint">💡 Test adgangskode: <code>test123</code></div>
             </div>
 
-            <button type="submit" class="login-button">
+            <button type="submit" class="login-button" id="loginBtn">
                 Log ind
             </button>
         </form>
 
         <div class="test-users">
-            <h3>🧪 Test Brugere (Local Testing)</h3>
+            <h3>🧪 Test Brugere (Firebase Test)</h3>
             <div class="test-user-card">
                 <strong>Bruger 1 - Admin</strong>
                 <code>admin@switzea.dk</code>
@@ -223,54 +233,88 @@
         </div>
     </div>
 
-    <script>
-        // TEST BRUGERE (Local only - erstattes med Firebase senere)
-        const testUsers = [
-            { email: 'admin@switzea.dk', password: 'test123', name: 'Admin', role: 'admin' },
-            { email: 'projekt@switzea.dk', password: 'test123', name: 'Projekt Manager', role: 'manager' },
-            { email: 'medarbejder@switzea.dk', password: 'test123', name: 'Medarbejder', role: 'user' }
-        ];
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-        // Check om bruger allerede er logget ind
-        window.addEventListener('DOMContentLoaded', function() {
-            const currentUser = localStorage.getItem('switzea_currentUser');
-            if (currentUser) {
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQoq8Y4H-fY8XbkKa5nEloDYQA3jzPPkg",
+            authDomain: "switzea-test.firebaseapp.com",
+            projectId: "switzea-test",
+            storageBucket: "switzea-test.firebasestorage.app",
+            messagingSenderId: "1006466000903",
+            appId: "1:1006466000903:web:aad0adfb1ab1e5f852e2a2"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Check if already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Already logged in, redirect to dashboard
                 window.location.href = 'dashboard.html';
             }
         });
 
         // Login form handler
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = document.getElementById('email').value.trim().toLowerCase();
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const loginBtn = document.getElementById('loginBtn');
 
-            const user = testUsers.find(u => u.email === email && u.password === password);
+            // Hide error, show loading
+            errorMessage.classList.remove('show');
+            loadingMessage.style.display = 'block';
+            loginBtn.disabled = true;
 
-            if (user) {
-                const userSession = {
-                    email: user.email,
-                    name: user.name,
-                    role: user.role,
-                    loginTime: new Date().toISOString()
-                };
-
-                localStorage.setItem('switzea_currentUser', JSON.stringify(userSession));
-                window.location.href = 'dashboard.html';
-            } else {
+            try {
+                // Sign in with Firebase
+                await signInWithEmailAndPassword(auth, email, password);
+                
+                // Success - redirect happens automatically via onAuthStateChanged
+                
+            } catch (error) {
+                // Handle errors
+                loadingMessage.style.display = 'none';
+                loginBtn.disabled = false;
+                
+                let errorText = 'Der opstod en fejl ved login';
+                
+                if (error.code === 'auth/invalid-email') {
+                    errorText = 'Ugyldig email adresse';
+                } else if (error.code === 'auth/user-not-found') {
+                    errorText = 'Brugeren findes ikke';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorText = 'Forkert adgangskode';
+                } else if (error.code === 'auth/invalid-credential') {
+                    errorText = 'Forkert email eller adgangskode';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorText = 'For mange login forsøg. Prøv igen senere.';
+                }
+                
+                errorMessage.textContent = errorText;
                 errorMessage.classList.add('show');
                 
-                setTimeout(function() {
-                    errorMessage.classList.remove('show');
-                }, 3000);
-
+                // Clear password field
                 document.getElementById('password').value = '';
+                
+                // Auto-hide error after 5 seconds
+                setTimeout(() => {
+                    errorMessage.classList.remove('show');
+                }, 5000);
             }
         });
 
-        // Auto-fill for hurtig test
+        // Auto-fill for quick test (double-click email field)
         document.getElementById('email').addEventListener('dblclick', function() {
             this.value = 'admin@switzea.dk';
             document.getElementById('password').value = 'test123';
