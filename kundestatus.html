@@ -1,545 +1,1694 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWITZEA - Kundestatus</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SWITZEA Kundestatus App</title>
     <style>
-        * {
-            margin: 0;
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #F5F1E8; 
+            margin: 0; 
             padding: 0;
-            box-sizing: border-box;
+            color: #1F2937;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #F5F1E8;
-            color: #333;
+        .app { 
+            display: flex; 
+            min-height: 100vh; 
+            position: relative;
         }
-
-        /* Navigation CSS injected via JavaScript */
-
-        /* Main Container */
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
+        
+        /* Sidebar */
+        .sidebar { 
+            width: 280px; 
+            background: #FFFFFF; 
+            border-right: 1px solid #E5E7EB; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 2px 0 8px rgba(44, 95, 125, 0.08);
+            transition: width 0.3s ease, min-width 0.3s ease;
+            position: relative;
+            min-width: 280px;
         }
-
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(139, 115, 85, 0.1);
+        .sidebar.collapsed {
+            width: 0;
+            min-width: 0;
+            border-right: none;
+            overflow: hidden;
         }
-
-        .header h1 {
-            color: #2C5F7D;
-            margin-bottom: 10px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn {
+        .sidebar h1 { 
             background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
+            color: white; 
+            padding: 20px; 
+            margin: 0; 
+            font-size: 18px;
+            text-align: center;
+            line-height: 1.3;
             font-weight: 600;
-            transition: all 0.3s;
         }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(44, 95, 125, 0.3);
-        }
-
-        /* Search */
-        .search-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(139, 115, 85, 0.1);
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #E5E7EB;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: #3A7CA5;
-        }
-
-        /* Customers Grid */
-        .customers-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .customer-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(139, 115, 85, 0.1);
-            border-left: 4px solid #8B7355;
-            transition: all 0.3s;
-        }
-
-        .customer-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
-        }
-
-        .customer-card h3 {
-            color: #2C5F7D;
-            margin-bottom: 10px;
-        }
-
-        .customer-info {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-
-        .customer-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn-small {
-            background: #8B7355;
+        .sidebar button:not(.toggle-sidebar-btn) {
+            background: #2C5F7D;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 12px 16px;
+            margin: 16px 12px 8px 12px;
             cursor: pointer;
-            font-size: 12px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
             transition: all 0.2s;
         }
-
-        .btn-small:hover {
-            background: #6B5845;
+        .sidebar button:not(.toggle-sidebar-btn):hover {
+            background: #3A7CA5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(44, 95, 125, 0.25);
         }
-
-        .btn-delete {
-            background: #DC2626;
+        .customers-list { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 8px 12px; 
         }
-
-        .btn-delete:hover {
-            background: #B91C1C;
+        .customer { 
+            border: 1px solid #E5E7EB; 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            background: #F9FAFB;
+            transition: all 0.2s;
         }
-
-        /* Modal */
-        .modal {
-            display: none;
+        .customer:hover { 
+            background: #E8F4F8; 
+            border-color: #3A7CA5;
+            transform: translateX(3px);
+        }
+        .customer.active {
+            background: #E8F4F8;
+            border-color: #2C5F7D;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(44, 95, 125, 0.12);
+        }
+        .customer-name {
+            font-weight: 600;
+            color: #2C5F7D;
+            font-size: 15px;
+        }
+        .customer-project {
+            font-size: 13px;
+            color: #4B5563;
+            margin: 4px 0;
+        }
+        .customer-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .status-active { background: #D1FAE5; color: #059669; }
+        .status-pending { background: #FEF3C7; color: #D97706; }
+        .status-completed { background: #E5E7EB; color: #6B7280; }
+        .status-urgent { background: #FEE2E2; color: #DC2626; }
+        
+        /* Toggle buttons */
+        .toggle-sidebar-btn {
             position: fixed;
-            z-index: 1000;
+            top: 50%;
             left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            transform: translateY(-50%);
+            background: #2C5F7D;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 60px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s;
+            box-shadow: 2px 0 12px rgba(44, 95, 125, 0.25);
+            border-radius: 0 6px 6px 0;
         }
-
-        .modal.active {
+        .toggle-sidebar-btn:hover {
+            background: #3A7CA5;
+            width: 35px;
+        }
+        .sidebar:not(.collapsed) ~ * .toggle-sidebar-btn,
+        .sidebar:not(.collapsed) .toggle-sidebar-btn {
+            left: 280px;
+        }
+        
+        .toggle-search-btn {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: #2C5F7D;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 60px;
+            cursor: pointer;
+            z-index: 1000;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s;
+            box-shadow: -2px 0 12px rgba(44, 95, 125, 0.25);
+            border-radius: 6px 0 0 6px;
         }
-
-        .modal-content {
+        .toggle-search-btn:hover {
+            background: #3A7CA5;
+            width: 35px;
+        }
+        .right-panel:not(.collapsed) ~ .toggle-search-btn {
+            right: 340px;
+        }
+        
+        /* Main content */
+        .main { 
+            flex: 1; 
+            padding: 20px; 
+            background: #F5F1E8; 
+            display: flex; 
+            flex-direction: row; 
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+        #customerContent { 
+            flex: 1; 
             background: white;
-            padding: 30px;
+            padding: 24px;
             border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
+            box-shadow: 0 2px 12px rgba(44, 95, 125, 0.08);
+            max-height: calc(100vh - 40px);
             overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-
-        .modal-content h2 {
+        .customer-header { 
+            border-bottom: 3px solid #2C5F7D; 
+            margin-bottom: 20px; 
+            padding-bottom: 12px;
+        }
+        .customer-header h2 {
+            margin: 0 0 8px 0;
             color: #2C5F7D;
-            margin-bottom: 20px;
+            font-size: 26px;
+            font-weight: 700;
         }
-
-        .form-group {
+        .customer-header p {
+            margin: 0 0 8px 0;
+            color: #4B5563;
+        }
+        
+        .customer-info-fields {
+            background: #F9FAFB;
+            padding: 18px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2C5F7D;
+        }
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
             margin-bottom: 15px;
         }
-
-        .form-group label {
+        .info-row-full {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
+            margin-bottom: 15px;
         }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #E5E7EB;
-            border-radius: 6px;
-            font-family: inherit;
+        .customer-info-fields label {
+            display: block;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 6px;
             font-size: 14px;
         }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
+        .customer-info-fields input,
+        .customer-info-fields select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #D1D5DB;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            background: white;
+        }
+        .customer-info-fields input:focus,
+        .customer-info-fields select:focus {
             outline: none;
             border-color: #3A7CA5;
             box-shadow: 0 0 0 3px rgba(58, 124, 165, 0.1);
         }
-
-        .modal-buttons {
+        
+        .timeline-section {
+            background: #FFF5F0;
+            padding: 18px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #E87461;
+        }
+        .timeline-section h3 {
+            margin: 0 0 15px 0;
+            color: #B33A2C;
+            font-size: 18px;
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
         }
-
-        .btn-cancel {
-            background: #E5E7EB;
-            color: #333;
-        }
-
-        .btn-cancel:hover {
-            background: #D1D5DB;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
+        
+        .add-entry-form {
             background: white;
-            border-radius: 8px;
-        }
-
-        /* Status Updates */
-        .status-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #E5E7EB;
-        }
-
-        .status-section h4 {
-            color: #2C5F7D;
+            padding: 15px;
+            border-radius: 6px;
             margin-bottom: 15px;
+            border: 2px dashed #FDB4A5;
         }
-
-        .status-entry {
-            background: #F5F1E8;
-            padding: 12px;
+        .add-entry-form input[type="date"],
+        .add-entry-form input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #D1D5DB;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .add-entry-form input[type="text"] {
+            font-weight: 600;
+        }
+        .add-entry-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #D1D5DB;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        .add-entry-form input:focus,
+        .add-entry-form textarea:focus {
+            outline: none;
+            border-color: #E87461;
+            box-shadow: 0 0 0 3px rgba(232, 116, 97, 0.1);
+        }
+        .add-entry-form button {
+            background: #E87461;
+            margin: 0;
+        }
+        .add-entry-form button:hover {
+            background: #D25E4D;
+        }
+        
+        .timeline-entries {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .timeline-entry {
+            background: white;
+            padding: 12px 15px;
             border-radius: 6px;
             margin-bottom: 10px;
-            border-left: 3px solid #8B7355;
+            border-left: 4px solid #E87461;
+            position: relative;
+            transition: all 0.2s;
         }
-
-        .status-entry .date {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
+        .timeline-entry:hover {
+            box-shadow: 0 4px 12px rgba(232, 116, 97, 0.15);
+            transform: translateX(3px);
         }
-
-        .status-entry .title {
+        .timeline-entry-date {
+            font-weight: 700;
+            color: #B33A2C;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        .timeline-entry-headline {
+            font-weight: 700;
+            color: #8B2E22;
+            font-size: 16px;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        .timeline-entry-text {
+            color: #1F2937;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .timeline-entry-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #DC2626;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 18px;
+            margin: 0;
+        }
+        .timeline-entry-delete:hover {
+            background: #FEE2E2;
+            border-radius: 4px;
+        }
+        
+        button { 
+            background-color: #2C5F7D; 
+            color: white; 
+            border: none; 
+            padding: 10px 18px; 
+            margin: 8px 4px 8px 0; 
+            cursor: pointer; 
+            border-radius: 6px; 
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        button:hover { 
+            background-color: #3A7CA5; 
+            box-shadow: 0 4px 12px rgba(44, 95, 125, 0.25);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+        .btn-pdf {
+            background: #DC2626;
+        }
+        .btn-pdf:hover {
+            background: #B91C1C;
+        }
+        
+        .right-panel { 
+            width: 340px; 
+            background: white; 
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(44, 95, 125, 0.08);
+            transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+            position: relative;
+            min-width: 340px;
+        }
+        .right-panel.collapsed {
+            width: 0;
+            min-width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .right-panel h3 {
+            margin: 0 0 16px 0;
+            color: #1F2937;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .search-box { 
+            margin-bottom: 16px; 
+        }
+        .search-box input { 
+            width: 100%; 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid #D1D5DB; 
+            font-size: 14px;
+            transition: border 0.2s;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #3A7CA5;
+            box-shadow: 0 0 0 3px rgba(58, 124, 165, 0.1);
+        }
+        #searchResults {
+            max-height: calc(100vh - 240px);
+            overflow-y: auto;
+        }
+        
+        .search-result {
+            border: 1px solid #E5E7EB;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            background: #F9FAFB;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .search-result:hover {
+            background: #E8F4F8;
+            border-color: #3A7CA5;
+            transform: translateX(3px);
+        }
+        .search-result-title {
             font-weight: 600;
             color: #2C5F7D;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
-
-        @media (max-width: 768px) {
-            .customers-grid {
+        .search-result-project {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 6px;
+        }
+        .search-result-snippet {
+            font-size: 13px;
+            color: #1F2937;
+            line-height: 1.4;
+        }
+        
+        .highlight {
+            background-color: #FEF3C7;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #92400E;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9CA3AF;
+        }
+        .empty-state h2 {
+            color: #6B7280;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 95, 125, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(44, 95, 125, 0.3);
+        }
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        .modal-header h3 {
+            margin: 0;
+            color: #2C5F7D;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #9CA3AF;
+            margin: 0;
+            padding: 0;
+        }
+        .modal-close:hover {
+            color: #4B5563;
+        }
+        
+        @media (max-width: 1024px) {
+            .info-row {
                 grid-template-columns: 1fr;
             }
         }
+        
+        @media (max-width: 900px) {
+            .app { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #E5E7EB; min-width: 100%; }
+            .sidebar.collapsed { height: 0; width: 100%; }
+            .main { flex-direction: column; padding: 16px; }
+            #customerContent { padding: 16px; max-height: none; }
+            .right-panel { width: 100%; margin-top: 16px; min-width: 100%; }
+            .right-panel.collapsed { height: 0; width: 100%; }
+            .info-row { grid-template-columns: 1fr; }
+            .modal-content { width: 95%; padding: 20px; }
+            .toggle-sidebar-btn, .toggle-search-btn { display: none; }
+        }
+    
+        /* SWITZEA Navigation Bar */
+        .switzea-nav-bar {
+            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
+            color: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(44,95,125,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-back-btn, .nav-logout-btn {
+            background: #8B7355;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-back-btn:hover, .nav-logout-btn:hover {
+            background: #6B5845;
+            transform: translateY(-1px);
+        }
+
+        .nav-app-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-app-links a {
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .nav-app-links a:hover {
+            background: rgba(139, 115, 85, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-app-links {
+                order: -1;
+            }
+        }
+
+    
+        /* SWITZEA Navigation Bar */
+        .switzea-nav-bar {
+            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
+            color: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(44,95,125,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-back-btn, .nav-logout-btn {
+            background: #8B7355;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-back-btn:hover, .nav-logout-btn:hover {
+            background: #6B5845;
+            transform: translateY(-1px);
+        }
+
+        .nav-app-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-app-links a {
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .nav-app-links a:hover {
+            background: rgba(139, 115, 85, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-app-links {
+                order: -1;
+            }
+        }
+
     </style>
+<!-- Firebase Integration -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQoq8Y4H-fY8XbkKa5nEloDYQA3jzPPkg",
+            authDomain: "switzea-test.firebaseapp.com",
+            projectId: "switzea-test",
+            storageBucket: "switzea-test.firebasestorage.app",
+            messagingSenderId: "1006466000903",
+            appId: "1:1006466000903:web:aad0adfb1ab1e5f852e2a2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseModules = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+            } else {
+                window.currentUser = user;
+                console.log('User authenticated:', user.email);
+                if (typeof loadCustomersFromFirestore === 'function') {
+                    await loadCustomersFromFirestore();
+                }
+            }
+        });
+
+        window.handleLogout = async function() {
+            if (confirm('Er du sikker på at du vil logge ud?')) {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    alert('Fejl ved logout');
+                }
+            }
+        };
+    </script>
+    
 </head>
 <body>
-    <!-- Navigation inserted via JavaScript -->
-    <div id="nav-container"></div>
-
-    <!-- Main Content -->
-    <div class="container">
-        <div class="header">
-            <h1>👥 Kundestatus</h1>
-            <p>Administrer kunder og deres projektstatus</p>
-            <div class="header-actions">
-                <button class="btn" onclick="openNewCustomerModal()">+ Opret Ny Kunde</button>
+<!-- SWITZEA Navigation Bar -->
+    <div class="switzea-nav-bar">
+        <div class="nav-content">
+            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
+                ← Tilbage til Dashboard
+            </button>
+            <div class="nav-app-links">
+                <a href="projektplanner.html">📊 Projektplanner</a>
+                <a href="referat.html">📝 Referat</a>
+                <a href="kundestatus.html">👥 Kundestatus</a>
             </div>
-        </div>
-
-        <!-- Search -->
-        <div class="search-box">
-            <input 
-                type="text" 
-                id="searchInput" 
-                placeholder="🔍 Søg efter kunde, projekt eller kontaktperson..." 
-                oninput="handleSearch()"
-            >
-        </div>
-
-        <!-- Customers Grid -->
-        <div id="customersList" class="customers-grid">
-            <div class="empty-state">
-                <p>Indlæser kunder...</p>
-            </div>
+            <button onclick="handleLogout()" class="nav-logout-btn">
+                🚪 Log ud
+            </button>
         </div>
     </div>
 
-    <!-- New Customer Modal -->
-    <div id="customerModal" class="modal">
-        <div class="modal-content">
-            <h2>Opret Ny Kunde</h2>
-            <form id="customerForm" onsubmit="handleSaveCustomer(event)">
-                <div class="form-group">
-                    <label>Kundenavn *</label>
-                    <input type="text" id="customerName" required>
-                </div>
-                <div class="form-group">
-                    <label>Projektnavn *</label>
-                    <input type="text" id="projectName" required>
-                </div>
-                <div class="form-group">
-                    <label>Kontaktperson</label>
-                    <input type="text" id="contactPerson">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="email">
-                </div>
-                <div class="form-group">
-                    <label>Telefon</label>
-                    <input type="tel" id="phone">
-                </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select id="status">
-                        <option value="Planlægning">Planlægning</option>
-                        <option value="I gang">I gang</option>
-                        <option value="Afventer">Afventer</option>
-                        <option value="Færdig">Færdig</option>
-                    </select>
-                </div>
+    
+<!-- SWITZEA Navigation Bar -->
+    <div class="switzea-nav-bar">
+        <div class="nav-content">
+            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
+                ← Tilbage til Dashboard
+            </button>
+            <div class="nav-app-links">
+                <a href="projektplanner.html">📊 Projektplanner</a>
+                <a href="referat.html">📝 Referat</a>
+                <a href="kundestatus.html">👥 Kundestatus</a>
+            </div>
+            <button onclick="handleLogout()" class="nav-logout-btn">
+                🚪 Log ud
+            </button>
+        </div>
+    </div>
 
-                <div class="modal-buttons">
-                    <button type="button" class="btn btn-cancel" onclick="closeModal()">Annuller</button>
-                    <button type="submit" class="btn">Gem Kunde</button>
+    
+    <button class="toggle-sidebar-btn" id="toggleSidebar">◀</button>
+    <button class="toggle-search-btn" id="toggleSearch">▶</button>
+    
+    <div class="app">
+        <div class="sidebar" id="sidebar">
+            <h1>👥 SWITZEA Kundestatus</h1>
+            <button id="newCustomerBtn">➕ Opret ny kunde</button>
+            <div class="customers-list" id="customersList"></div>
+        </div>
+        
+        <div class="main">
+            <div id="customerContent">
+                <div class="empty-state">
+                    <h2>Velkommen til SWITZEA Kundestatus</h2>
+                    <p>Opret en ny kunde for at komme i gang, eller vælg en eksisterende kunde fra sidebaren.</p>
+                </div>
+            </div>
+            
+            <div class="right-panel" id="rightPanel">
+                <h3>🔍 Søg i kunder</h3>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Søg efter kunde, projekt eller noter..." />
+                </div>
+                <div id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="customerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Ny Kunde</h3>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="customerForm">
+                <div class="info-row">
+                    <div>
+                        <label>Kunde navn:</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div>
+                        <label>Kontaktperson:</label>
+                        <input type="text" id="contactPerson">
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div>
+                        <label>Email:</label>
+                        <input type="email" id="email">
+                    </div>
+                    <div>
+                        <label>Telefon:</label>
+                        <input type="tel" id="phone">
+                    </div>
+                </div>
+                <div class="info-row-full">
+                    <label>Projekt/Sag:</label>
+                    <input type="text" id="project" required>
+                </div>
+                <div class="info-row">
+                    <div>
+                        <label>Status:</label>
+                        <select id="status">
+                            <option value="active">Aktiv</option>
+                            <option value="pending">Afventer svar</option>
+                            <option value="completed">Afsluttet</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Næste opfølgning:</label>
+                        <input type="date" id="followUpDate">
+                    </div>
+                </div>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" id="cancelModalBtn" style="background: #6B7280;">Annuller</button>
+                    <button type="submit">Gem kunde</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODULE SCRIPT -->
-    <script type="module">
-        // Import shared modules
-        import { 
-            checkAuth, 
-            getCurrentUser, 
-            createDocument, 
-            getAllDocuments, 
-            updateDocument, 
-            deleteDocument,
-            formatDanishDate,
-            showSuccess,
-            showError
-        } from './shared-utils.js';
-        
-        import { 
-            initNavigation, 
-            getNavigationHTML, 
-            getNavigationCSS 
-        } from './navigation.js';
-        
-        // Global state
-        let allCustomers = [];
-        let filteredCustomers = [];
-        
-        // Initialize app
-        async function init() {
-            try {
-                // 1. Check authentication
-                const user = await checkAuth();
-                console.log('✅ User:', user.email);
-                
-                // 2. Add navigation
-                const navContainer = document.getElementById('nav-container');
-                navContainer.innerHTML = getNavigationHTML();
-                
-                // Inject navigation CSS
-                const style = document.createElement('style');
-                style.textContent = getNavigationCSS();
-                document.head.appendChild(style);
-                
-                initNavigation();
-                
-                // 3. Load customers
-                await loadCustomers();
-                
-            } catch (error) {
-                console.error('Init error:', error);
-            }
-        }
-        
-        // Load customers from Firestore
-        async function loadCustomers() {
-            try {
-                allCustomers = await getAllDocuments('customers', 'id', 'desc');
-                filteredCustomers = [...allCustomers];
-                renderCustomers();
-            } catch (error) {
-                console.error('Load error:', error);
-                showError('Kunne ikke hente kunder');
-            }
-        }
-        
-        // Render customers
-        function renderCustomers() {
-            const container = document.getElementById('customersList');
-            
-            if (filteredCustomers.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>Ingen kunder fundet</p></div>';
-                return;
-            }
+    <script>
+        let customers = [];
+        let currentCustomerId = null;
 
-            container.innerHTML = filteredCustomers.map(customer => `
-                <div class="customer-card">
-                    <h3>${customer.customerName || 'Unavngivet'}</h3>
-                    <div class="customer-info">
-                        <strong>Projekt:</strong> ${customer.projectName || customer.project || '-'}<br>
-                        <strong>Kontakt:</strong> ${customer.contactPerson || '-'}<br>
-                        <strong>Email:</strong> ${customer.email || '-'}<br>
-                        <strong>Telefon:</strong> ${customer.phone || '-'}<br>
-                        <strong>Status:</strong> <span style="color: #8B7355; font-weight: bold;">${customer.status || '-'}</span>
-                    </div>
-                    
-                    ${customer.statusUpdates && customer.statusUpdates.length > 0 ? `
-                        <div class="status-section">
-                            <h4>Status Opdateringer (${customer.statusUpdates.length})</h4>
-                            ${customer.statusUpdates.slice(-2).map(update => `
-                                <div class="status-entry">
-                                    <div class="date">${formatDanishDate(update.date)}</div>
-                                    <div class="title">${update.title || 'Status'}</div>
-                                    <div>${update.description || update.note || ''}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                    
-                    <div class="customer-actions">
-                        <button class="btn-small" onclick="viewCustomer('${customer.id}')">👁️ Vis</button>
-                        <button class="btn-small btn-delete" onclick="handleDeleteCustomer('${customer.id}')">🗑️ Slet</button>
-                    </div>
-                </div>
-            `).join('');
+        function formatDanishDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return day + '-' + month + '-' + year;
         }
-        
-        // Search handler
-        window.handleSearch = function() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+        function updateToggleButtons() {
+            const sidebar = document.getElementById('sidebar');
+            const panel = document.getElementById('rightPanel');
+            const sidebarBtn = document.getElementById('toggleSidebar');
+            const searchBtn = document.getElementById('toggleSearch');
             
-            if (!searchTerm) {
-                filteredCustomers = [...allCustomers];
+            if (sidebar.classList.contains('collapsed')) {
+                sidebarBtn.style.left = '0';
             } else {
-                filteredCustomers = allCustomers.filter(customer => {
-                    return (
-                        (customer.customerName && customer.customerName.toLowerCase().includes(searchTerm)) ||
-                        (customer.projectName && customer.projectName.toLowerCase().includes(searchTerm)) ||
-                        (customer.project && customer.project.toLowerCase().includes(searchTerm)) ||
-                        (customer.contactPerson && customer.contactPerson.toLowerCase().includes(searchTerm))
-                    );
-                });
+                sidebarBtn.style.left = '280px';
             }
             
-            renderCustomers();
-        };
-        
-        // Open modal
-        window.openNewCustomerModal = function() {
-            document.getElementById('customerModal').classList.add('active');
+            if (panel.classList.contains('collapsed')) {
+                searchBtn.style.right = '0';
+            } else {
+                searchBtn.style.right = '340px';
+            }
+        }
+
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const btn = document.getElementById('toggleSidebar');
+            sidebar.classList.toggle('collapsed');
+            btn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+            updateToggleButtons();
+        });
+
+        document.getElementById('toggleSearch').addEventListener('click', function() {
+            const panel = document.getElementById('rightPanel');
+            const btn = document.getElementById('toggleSearch');
+            panel.classList.toggle('collapsed');
+            btn.textContent = panel.classList.contains('collapsed') ? '◀' : '▶';
+            updateToggleButtons();
+        });
+
+        function newCustomer() {
+            document.getElementById('modalTitle').textContent = 'Ny Kunde';
             document.getElementById('customerForm').reset();
-        };
-        
-        // Close modal
-        window.closeModal = function() {
-            document.getElementById('customerModal').classList.remove('active');
-        };
-        
-        // Save customer
-        window.handleSaveCustomer = async function(event) {
-            event.preventDefault();
-            
-            const customerData = {
-                id: Date.now(),
+            const nextWeek = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+            document.getElementById('followUpDate').value = nextWeek;
+            document.getElementById('customerModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('customerModal').style.display = 'none';
+        }
+
+        document.getElementById('newCustomerBtn').addEventListener('click', newCustomer);
+        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+        document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+
+        document.getElementById('customerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveNewCustomer();
+        });
+
+        async function saveNewCustomer() {
+            const { addDoc, collection } = window.firebaseModules;
+
+            const id = Date.now();
+            const customer = {
+                id: id,
                 customerName: document.getElementById('customerName').value,
-                projectName: document.getElementById('projectName').value,
                 contactPerson: document.getElementById('contactPerson').value,
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value,
+                project: document.getElementById('project').value,
                 status: document.getElementById('status').value,
-                statusUpdates: []
+                startDate: document.getElementById('startDate').value,
+                deadline: document.getElementById('deadline').value,
+                statusUpdates: [],
+                createdAt: new Date().toISOString(),
+                createdBy: window.currentUser.uid
             };
 
+            if (!customer.customerName || !customer.project) {
+                alert('Udfyld venligst kundenavn og projekt');
+                return;
+            }
+
             try {
-                await createDocument('customers', customerData);
-                showSuccess('Kunde gemt!');
+                const docRef = await addDoc(collection(window.firebaseDb, 'customers'), customer);
+                console.log('Customer saved:', docRef.id);
+
+                await loadCustomersFromFirestore();
                 closeModal();
-                await loadCustomers();
+                document.getElementById('customerForm').reset();
             } catch (error) {
-                showError('Kunne ikke gemme: ' + error.message);
+                console.error('Error:', error);
+                alert('Fejl: ' + error.message);
             }
         };
-        
-        // Delete customer
-        window.handleDeleteCustomer = async function(customerId) {
-            const customer = allCustomers.find(c => c.id == customerId);
+
+            customers.unshift(customer);
+            saveCustomersLocal();
+            renderCustomers();
+            closeModal();
+            openCustomer(id);
+        }
+
+        function renderCustomers() {
+            const listDiv = document.getElementById('customersList');
+            listDiv.innerHTML = '';
+            
+            if (customers.length === 0) {
+                listDiv.innerHTML = '<p style="padding: 10px; color: #9CA3AF; text-align: center;">Ingen kunder endnu</p>';
+                return;
+            }
+            
+            customers.forEach(function(c) {
+                const div = document.createElement('div');
+                div.className = 'customer';
+                if (c.id === currentCustomerId) div.classList.add('active');
+                
+                let statusClass = 'status-active';
+                if (c.status === 'pending') statusClass = 'status-pending';
+                else if (c.status === 'completed') statusClass = 'status-completed';
+                else if (c.status === 'urgent') statusClass = 'status-urgent';
+                
+                const statusText = {
+                    'active': 'Aktiv',
+                    'pending': 'Afventer',
+                    'completed': 'Afsluttet',
+                    'urgent': 'Urgent'
+                }[c.status] || c.status;
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'customer-name';
+                nameDiv.textContent = c.customerName;
+                
+                const projectDiv = document.createElement('div');
+                projectDiv.className = 'customer-project';
+                projectDiv.textContent = c.project;
+                
+                const statusSpan = document.createElement('span');
+                statusSpan.className = 'customer-status ' + statusClass;
+                statusSpan.textContent = statusText;
+                
+                div.appendChild(nameDiv);
+                div.appendChild(projectDiv);
+                div.appendChild(statusSpan);
+                div.addEventListener('click', function() { openCustomer(c.id); });
+                listDiv.appendChild(div);
+            });
+        }
+
+        function openCustomer(id) {
+            currentCustomerId = id;
+            const customer = customers.find(function(c) { return c.id === id; });
             if (!customer) return;
             
-            try {
-                await deleteDocument('customers', customer.id);
-                showSuccess('Kunde slettet!');
-                await loadCustomers();
-            } catch (error) {
-                showError('Kunne ikke slette: ' + error.message);
+            if (!customer.statusTimeline) customer.statusTimeline = [];
+            
+            const contentDiv = document.getElementById('customerContent');
+            contentDiv.innerHTML = '';
+            
+            const header = document.createElement('div');
+            header.className = 'customer-header';
+            const h2 = document.createElement('h2');
+            h2.textContent = customer.customerName;
+            const p = document.createElement('p');
+            p.textContent = '📋 ' + customer.project;
+            header.appendChild(h2);
+            header.appendChild(p);
+            contentDiv.appendChild(header);
+            
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'customer-info-fields';
+            infoDiv.innerHTML = '<div class="info-row">' +
+                '<div><label>👤 Kontaktperson:</label><input type="text" id="contactPersonField" value="' + (customer.contactPerson || '') + '" /></div>' +
+                '<div><label>📧 Email:</label><input type="email" id="emailField" value="' + (customer.email || '') + '" /></div>' +
+                '</div>' +
+                '<div class="info-row">' +
+                '<div><label>📱 Telefon:</label><input type="tel" id="phoneField" value="' + (customer.phone || '') + '" /></div>' +
+                '<div><label>📊 Status:</label><select id="statusField">' +
+                '<option value="active"' + (customer.status === 'active' ? ' selected' : '') + '>Aktiv</option>' +
+                '<option value="pending"' + (customer.status === 'pending' ? ' selected' : '') + '>Afventer svar</option>' +
+                '<option value="completed"' + (customer.status === 'completed' ? ' selected' : '') + '>Afsluttet</option>' +
+                '<option value="urgent"' + (customer.status === 'urgent' ? ' selected' : '') + '>Urgent</option>' +
+                '</select></div>' +
+                '</div>' +
+                '<div class="info-row">' +
+                '<div><label>📅 Sidste kontakt:</label><input type="date" id="lastContactField" value="' + (customer.lastContact || '') + '" /></div>' +
+                '<div><label>⏰ Næste opfølgning:</label><input type="date" id="followUpDateField" value="' + (customer.followUpDate || '') + '" /></div>' +
+                '</div>' +
+                '<div class="info-row-full"><label>📋 Projekt/Sag:</label><input type="text" id="projectField" value="' + (customer.project || '') + '" /></div>';
+            contentDiv.appendChild(infoDiv);
+            
+            const statusSection = document.createElement('div');
+            statusSection.className = 'timeline-section';
+            statusSection.innerHTML = '<h3>📝 Status<button class="btn-small" id="addStatusBtn">➕ Tilføj</button></h3>' +
+                '<div class="add-entry-form" id="statusForm" style="display: none;">' +
+                '<input type="date" id="statusDate" value="' + new Date().toISOString().split('T')[0] + '" />' +
+                '<input type="text" id="statusHeadline" placeholder="Overskrift" />' +
+                '<textarea id="statusText" placeholder="Beskriv hvad der skete..."></textarea>' +
+                '<button id="saveStatusBtn">Gem status</button>' +
+                '</div>' +
+                '<div class="timeline-entries" id="statusTimeline"></div>';
+            contentDiv.appendChild(statusSection);
+            
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.marginTop = '20px';
+            
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = '💾 Gem kundestatus';
+            saveBtn.addEventListener('click', function() { saveCustomerStatus(customer.id); });
+            
+            const exportPdfBtn = document.createElement('button');
+            exportPdfBtn.textContent = '📑 Download PDF';
+            exportPdfBtn.className = 'btn-pdf';
+            exportPdfBtn.addEventListener('click', function() { exportToPDF(customer); });
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '🗑️ Slet kunde';
+            deleteBtn.style.background = '#DC2626';
+            deleteBtn.addEventListener('click', function() { deleteCustomer(customer.id); });
+            
+            buttonContainer.appendChild(saveBtn);
+            buttonContainer.appendChild(exportPdfBtn);
+            buttonContainer.appendChild(deleteBtn);
+            contentDiv.appendChild(buttonContainer);
+            
+            document.getElementById('addStatusBtn').addEventListener('click', toggleStatusForm);
+            document.getElementById('saveStatusBtn').addEventListener('click', addStatusEntry);
+            
+            renderStatusTimeline(customer);
+            renderCustomers();
+        }
+
+        function exportToPDF(customer) {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(generatePrintHTML(customer));
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(function() {
+                printWindow.print();
+            }, 250);
+        }
+
+        function generatePrintHTML(customer) {
+            let statusHTML = '';
+            if (customer.statusTimeline && customer.statusTimeline.length > 0) {
+                customer.statusTimeline.forEach(function(entry) {
+                    statusHTML += '<div style="background: white; padding: 15px; margin-bottom: 12px; border-left: 4px solid #E87461; page-break-inside: avoid;">' +
+                        '<div style="font-weight: 700; color: #B33A2C; font-size: 12pt; margin-bottom: 6px;">' + formatDanishDate(entry.date) + '</div>' +
+                        '<div style="font-weight: 700; color: #8B2E22; font-size: 14pt; margin-bottom: 8px; line-height: 1.3;">' + entry.headline + '</div>' +
+                        '<div style="color: #1F2937; font-size: 11pt; line-height: 1.5; white-space: pre-wrap;">' + entry.text + '</div>' +
+                        '</div>';
+                });
+            } else {
+                statusHTML = '<p style="text-align: center; color: #9CA3AF; padding: 20px;">Ingen status-opdateringer</p>';
+            }
+
+            return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SWITZEA - ' + customer.customerName + '</title>' +
+                '<style>' +
+                '@page { margin: 2cm; size: A4; }' +
+                'body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; color: #1F2937; }' +
+                '.header { border-bottom: 3pt solid #2C5F7D; padding-bottom: 12pt; margin-bottom: 20pt; page-break-after: avoid; }' +
+                '.header h1 { color: #2C5F7D; font-size: 24pt; margin: 0 0 8pt 0; font-weight: 700; }' +
+                '.header p { color: #4B5563; margin: 0; font-size: 12pt; }' +
+                '.info-section { background: #F9FAFB; padding: 15pt; border-radius: 4pt; margin-bottom: 20pt; border-left: 4pt solid #2C5F7D; page-break-inside: avoid; }' +
+                '.info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; margin-bottom: 12pt; }' +
+                '.info-label { font-weight: 600; color: #1F2937; margin-bottom: 4pt; font-size: 10pt; }' +
+                '.info-value { color: #4B5563; font-size: 11pt; }' +
+                '.status-section { background: #FFF5F0; padding: 15pt; border-radius: 4pt; margin-bottom: 20pt; border-left: 4pt solid #E87461; page-break-inside: avoid; }' +
+                '.status-section h2 { color: #B33A2C; font-size: 16pt; margin: 0 0 15pt 0; font-weight: 600; page-break-after: avoid; }' +
+                '
+        /* SWITZEA Navigation Bar */
+        .switzea-nav-bar {
+            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
+            color: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(44,95,125,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-back-btn, .nav-logout-btn {
+            background: #8B7355;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-back-btn:hover, .nav-logout-btn:hover {
+            background: #6B5845;
+            transform: translateY(-1px);
+        }
+
+        .nav-app-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-app-links a {
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .nav-app-links a:hover {
+            background: rgba(139, 115, 85, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-app-links {
+                order: -1;
+            }
+        }
+
+    </style><!-- Firebase Integration -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQoq8Y4H-fY8XbkKa5nEloDYQA3jzPPkg",
+            authDomain: "switzea-test.firebaseapp.com",
+            projectId: "switzea-test",
+            storageBucket: "switzea-test.firebasestorage.app",
+            messagingSenderId: "1006466000903",
+            appId: "1:1006466000903:web:aad0adfb1ab1e5f852e2a2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseModules = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+            } else {
+                window.currentUser = user;
+                console.log('User authenticated:', user.email);
+                if (typeof loadCustomersFromFirestore === 'function') {
+                    await loadCustomersFromFirestore();
+                }
+            }
+        });
+
+        window.handleLogout = async function() {
+            if (confirm('Er du sikker på at du vil logge ud?')) {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    alert('Fejl ved logout');
+                }
             }
         };
-        
-        // View customer (placeholder)
-        window.viewCustomer = function(customerId) {
-            const customer = allCustomers.find(c => c.id == customerId);
-            if (customer) {
-                alert('Fuld visning af kunde kommer snart!\n\nKunde: ' + customer.customerName);
-            }
-        };
-        
-        // Close modal on background click
-        window.onclick = function(event) {
-            const modal = document.getElementById('customerModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        };
-        
-        // Start app
-        init();
     </script>
+    
+</head><body>
+<!-- SWITZEA Navigation Bar -->
+    <div class="switzea-nav-bar">
+        <div class="nav-content">
+            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
+                ← Tilbage til Dashboard
+            </button>
+            <div class="nav-app-links">
+                <a href="projektplanner.html">📊 Projektplanner</a>
+                <a href="referat.html">📝 Referat</a>
+                <a href="kundestatus.html">👥 Kundestatus</a>
+            </div>
+            <button onclick="handleLogout()" class="nav-logout-btn">
+                🚪 Log ud
+            </button>
+        </div>
+    </div>
+
+    
+<!-- SWITZEA Navigation Bar -->
+    <div class="switzea-nav-bar">
+        <div class="nav-content">
+            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
+                ← Tilbage til Dashboard
+            </button>
+            <div class="nav-app-links">
+                <a href="projektplanner.html">📊 Projektplanner</a>
+                <a href="referat.html">📝 Referat</a>
+                <a href="kundestatus.html">👥 Kundestatus</a>
+            </div>
+            <button onclick="handleLogout()" class="nav-logout-btn">
+                🚪 Log ud
+            </button>
+        </div>
+    </div>
+
+    ' +
+                '<div class="header">' +
+                '<h1>' + customer.customerName + '</h1>' +
+                '<p>📋 ' + customer.project + '</p>' +
+                '</div>' +
+                '<div class="info-section">' +
+                '<div class="info-row">' +
+                '<div><div class="info-label">👤 Kontaktperson:</div><div class="info-value">' + (customer.contactPerson || '-') + '</div></div>' +
+                '<div><div class="info-label">📧 Email:</div><div class="info-value">' + (customer.email || '-') + '</div></div>' +
+                '</div>' +
+                '<div class="info-row">' +
+                '<div><div class="info-label">📱 Telefon:</div><div class="info-value">' + (customer.phone || '-') + '</div></div>' +
+                '<div><div class="info-label">📊 Status:</div><div class="info-value">' + ({'active': 'Aktiv', 'pending': 'Afventer', 'completed': 'Afsluttet', 'urgent': 'Urgent'}[customer.status] || customer.status) + '</div></div>' +
+                '</div>' +
+                '<div class="info-row">' +
+                '<div><div class="info-label">📅 Sidste kontakt:</div><div class="info-value">' + formatDanishDate(customer.lastContact) + '</div></div>' +
+                '<div><div class="info-label">⏰ Næste opfølgning:</div><div class="info-value">' + formatDanishDate(customer.followUpDate) + '</div></div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="status-section">' +
+                '<h2>📝 Status</h2>' +
+                statusHTML +
+                '</div>' +
+                '</body></html>';
+        }
+
+        function toggleStatusForm() {
+            const form = document.getElementById('statusForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addStatusEntry() {
+            const customer = customers.find(function(c) { return c.id === currentCustomerId; });
+            if (!customer) return;
+            
+            const date = document.getElementById('statusDate').value;
+            const headline = document.getElementById('statusHeadline').value.trim();
+            const text = document.getElementById('statusText').value.trim();
+            
+            if (!date || !headline || !text) {
+                alert('Indtast dato, overskrift og status');
+                return;
+            }
+            
+            customer.statusTimeline.unshift({
+                date: date,
+                headline: headline,
+                text: text,
+                timestamp: Date.now()
+            });
+            
+            document.getElementById('statusHeadline').value = '';
+            document.getElementById('statusText').value = '';
+            document.getElementById('statusDate').value = new Date().toISOString().split('T')[0];
+            
+            saveCustomersLocal();
+            renderStatusTimeline(customer);
+            toggleStatusForm();
+        }
+
+        function renderStatusTimeline(customer) {
+            const container = document.getElementById('statusTimeline');
+            if (!container) return;
+            
+            if (!customer.statusTimeline || customer.statusTimeline.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #9CA3AF; padding: 20px;">Ingen status-opdateringer endnu</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            customer.statusTimeline.forEach(function(entry, index) {
+                const div = document.createElement('div');
+                div.className = 'timeline-entry';
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'timeline-entry-delete';
+                deleteBtn.textContent = '×';
+                deleteBtn.title = 'Slet';
+                deleteBtn.addEventListener('click', function() { deleteStatusEntry(index); });
+                
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'timeline-entry-date';
+                dateDiv.textContent = formatDanishDate(entry.date);
+                
+                const headlineDiv = document.createElement('div');
+                headlineDiv.className = 'timeline-entry-headline';
+                headlineDiv.textContent = entry.headline || '';
+                
+                const textDiv = document.createElement('div');
+                textDiv.className = 'timeline-entry-text';
+                textDiv.textContent = entry.text || '';
+                
+                div.appendChild(deleteBtn);
+                div.appendChild(dateDiv);
+                div.appendChild(headlineDiv);
+                div.appendChild(textDiv);
+                container.appendChild(div);
+            });
+        }
+
+        function deleteStatusEntry(index) {
+            if (!confirm('Slet denne status-opdatering?')) return;
+            const customer = customers.find(function(c) { return c.id === currentCustomerId; });
+            if (!customer) return;
+            customer.statusTimeline.splice(index, 1);
+            saveCustomersLocal();
+            renderStatusTimeline(customer);
+        }
+
+        async function saveCustomerStatus(customerId) {
+            const { updateDoc, doc } = window.firebaseModules;
+
+            const title = document.getElementById('statusTitle').value;
+            const description = document.getElementById('statusDescription').value;
+
+            if (!title || !description) {
+                alert('Udfyld både titel og beskrivelse');
+                return;
+            }
+
+            try {
+                const customer = firestoreCustomers.find(c => c.id == customerId);
+                if (!customer || !customer.firestoreId) {
+                    alert('Kunne ikke finde kunde');
+                    return;
+                }
+
+                const newStatus = {
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    title: title,
+                    description: description
+                };
+
+                const updatedStatuses = [...(customer.statusUpdates || []), newStatus];
+
+                await updateDoc(doc(window.firebaseDb, 'customers', customer.firestoreId), {
+                    statusUpdates: updatedStatuses,
+                    updatedAt: new Date().toISOString()
+                });
+
+                console.log('Status saved');
+                await loadCustomersFromFirestore();
+
+                document.getElementById('statusForm').style.display = 'none';
+                document.getElementById('statusTitle').value = '';
+                document.getElementById('statusDescription').value = '';
+
+                openCustomer(customerId);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Fejl: ' + error.message);
+            }
+        });
+            if (!customer) return;
+            
+            customer.contactPerson = document.getElementById('contactPersonField').value;
+            customer.email = document.getElementById('emailField').value;
+            customer.phone = document.getElementById('phoneField').value;
+            customer.status = document.getElementById('statusField').value;
+            customer.lastContact = document.getElementById('lastContactField').value;
+            customer.followUpDate = document.getElementById('followUpDateField').value;
+            customer.project = document.getElementById('projectField').value;
+            customer.updatedAt = new Date().toISOString();
+            
+            saveCustomersLocal();
+            renderCustomers();
+            
+            alert('✅ Kundestatus gemt lokalt!');
+        }
+
+        async function deleteCustomer(customerId) {
+            const { deleteDoc, doc } = window.firebaseModules;
+
+            if (!confirm('Er du sikker på at du vil slette denne kunde?')) {
+                return;
+            }
+
+            try {
+                const customer = firestoreCustomers.find(c => c.id == customerId);
+                if (!customer || !customer.firestoreId) {
+                    alert('Kunne ikke finde kunde');
+                    return;
+                }
+
+                await deleteDoc(doc(window.firebaseDb, 'customers', customer.firestoreId));
+                console.log('Customer deleted');
+
+                await loadCustomersFromFirestore();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Fejl: ' + error.message);
+            }
+        });
+            saveCustomersLocal();
+            document.getElementById('customerContent').innerHTML = '<div class="empty-state"><h2>Kunde slettet</h2><p>Vælg en anden kunde eller opret en ny.</p></div>';
+            currentCustomerId = null;
+            renderCustomers();
+        }
+
+        function performSearch(term) {
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (!term || term.trim() === '') {
+                resultsContainer.innerHTML = '<p style="color: #9CA3AF; text-align: center; padding: 20px;">Indtast søgeord</p>';
+                return;
+            }
+            
+            const searchTerm = term.toLowerCase().trim();
+            const results = [];
+            
+            customers.forEach(function(customer) {
+                if (customer.customerName.toLowerCase().includes(searchTerm)) {
+                    results.push({
+                        customerId: customer.id,
+                        customerName: customer.customerName,
+                        project: customer.project,
+                        location: 'Kunde navn',
+                        snippet: customer.customerName
+                    });
+                }
+                
+                if (customer.project.toLowerCase().includes(searchTerm)) {
+                    results.push({
+                        customerId: customer.id,
+                        customerName: customer.customerName,
+                        project: customer.project,
+                        location: 'Projekt',
+                        snippet: customer.project
+                    });
+                }
+                
+                if (customer.contactPerson && customer.contactPerson.toLowerCase().includes(searchTerm)) {
+                    results.push({
+                        customerId: customer.id,
+                        customerName: customer.customerName,
+                        project: customer.project,
+                        location: 'Kontaktperson',
+                        snippet: customer.contactPerson
+                    });
+                }
+                
+                if (customer.statusTimeline && customer.statusTimeline.length > 0) {
+                    customer.statusTimeline.forEach(function(entry) {
+                        if (entry.headline && entry.headline.toLowerCase().includes(searchTerm)) {
+                            results.push({
+                                customerId: customer.id,
+                                customerName: customer.customerName,
+                                project: customer.project,
+                                location: 'Status: ' + entry.headline,
+                                snippet: highlightText(entry.headline, searchTerm)
+                            });
+                        }
+                        if (entry.text && entry.text.toLowerCase().includes(searchTerm)) {
+                            const snippet = createSnippet(entry.text, searchTerm);
+                            results.push({
+                                customerId: customer.id,
+                                customerName: customer.customerName,
+                                project: customer.project,
+                                location: 'Status: ' + (entry.headline || 'Noter'),
+                                snippet: snippet
+                            });
+                        }
+                    });
+                }
+            });
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<p style="color: #9CA3AF; text-align: center; padding: 20px;">Ingen resultater fundet</p>';
+                return;
+            }
+            
+            resultsContainer.innerHTML = '';
+            results.forEach(function(result) {
+                const div = document.createElement('div');
+                div.className = 'search-result';
+                
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'search-result-title';
+                titleDiv.textContent = result.customerName;
+                
+                const projectDiv = document.createElement('div');
+                projectDiv.className = 'search-result-project';
+                projectDiv.textContent = '📍 ' + result.location + ' • ' + result.project;
+                
+                const snippetDiv = document.createElement('div');
+                snippetDiv.className = 'search-result-snippet';
+                snippetDiv.innerHTML = result.snippet;
+                
+                div.appendChild(titleDiv);
+                div.appendChild(projectDiv);
+                div.appendChild(snippetDiv);
+                div.addEventListener('click', function() { openCustomer(result.customerId); });
+                resultsContainer.appendChild(div);
+            });
+        }
+
+        function createSnippet(text, searchTerm) {
+            const position = text.toLowerCase().indexOf(searchTerm.toLowerCase());
+            if (position === -1) return text.substring(0, 100) + '...';
+            
+            const start = Math.max(0, position - 40);
+            const end = Math.min(text.length, position + searchTerm.length + 40);
+            let snippet = text.substring(start, end);
+            
+            if (start > 0) snippet = '...' + snippet;
+            if (end < text.length) snippet = snippet + '...';
+            
+            return highlightText(snippet, searchTerm);
+        }
+
+        function highlightText(text, searchTerm) {
+            const regex = new RegExp('(' + searchTerm + ')', 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            performSearch(e.target.value);
+        });
+
+        function saveCustomersLocal() {
+            localStorage.setItem('switzea-customers', JSON.stringify(customers));
+        }
+
+        function loadCustomersLocal() {
+            const saved = localStorage.getItem('switzea-customers');
+            if (saved) {
+                try {
+                    customers = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Could not load customers:', e);
+                    customers = [];
+                }
+            }
+        }
+
+        window.onload = function() {
+            loadCustomersLocal();
+            renderCustomers();
+            document.getElementById('searchResults').innerHTML = '<p style="color: #9CA3AF; text-align: center; padding: 20px;">Indtast søgeord</p>';
+            updateToggleButtons();
+        };
+
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('customerModal');
+            if (e.target === modal) closeModal();
+        });
+    
+        // SWITZEA Auth Check
+        function checkSwitzeaAuth() {
+            const currentUser = localStorage.getItem('switzea_currentUser');
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            return JSON.parse(currentUser);
+        }
+
+        function handleLogout() {
+            if (confirm('Er du sikker på at du vil logge ud?')) {
+                localStorage.removeItem('switzea_currentUser');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Check auth when page loads
+        (function() {
+            checkSwitzeaAuth();
+        })();
+
+        
+    
+        // ============================================================
+        // FIRESTORE INTEGRATION
+        // ============================================================
+
+        let firestoreCustomers = [];
+
+        // Load customers from Firestore
+        async function loadCustomersFromFirestore() {
+            const { getDocs, collection, query, orderBy } = window.firebaseModules;
+
+            try {
+                console.log('Loading from Firestore...');
+                const q = query(collection(window.firebaseDb, 'customers'), orderBy('id', 'desc'));
+                const snapshot = await getDocs(q);
+
+                firestoreCustomers = [];
+                snapshot.forEach(docSnap => {
+                    firestoreCustomers.push({
+                        firestoreId: docSnap.id,
+                        ...docSnap.data()
+                    });
+                });
+
+                console.log('Loaded', firestoreCustomers.length, 'customers from Firestore');
+                renderCustomers();
+            } catch (error) {
+                console.error('Error loading:', error);
+                firestoreCustomers = [];
+                renderCustomers();
+            }
+        }
+
+        // Override localStorage functions to use Firestore
+        const originalLoadCustomersLocal = loadCustomersLocal;
+        const originalSaveCustomersLocal = saveCustomersLocal;
+
+        function loadCustomersLocal() {
+            return firestoreCustomers;
+        }
+
+        function saveCustomersLocal() {
+            console.log('saveCustomersLocal deprecated - using Firestore');
+        }
+        
+        </script>
 </body>
 </html>
