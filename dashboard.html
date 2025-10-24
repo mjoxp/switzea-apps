@@ -207,6 +207,13 @@
             font-size: 14px;
         }
 
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9CA3AF;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header {
@@ -236,100 +243,135 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="header-left">
-                <h1>👥 SWITZEA Dashboard</h1>
-                <p>Administration Platform</p>
-            </div>
-            <div class="header-right">
-                <div class="user-info">
-                    <div class="name" id="userName">Indlæser...</div>
-                    <div class="role" id="userRole"></div>
+    <div id="loadingScreen" class="loading">
+        Indlæser...
+    </div>
+
+    <div id="dashboardContent" style="display: none;">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>👥 SWITZEA Dashboard</h1>
+                    <p>Administration Platform</p>
                 </div>
-                <button class="logout-button" id="logoutBtn">
-                    🚪 Log ud
-                </button>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="name" id="userName">...</div>
+                        <div class="role" id="userRole"></div>
+                    </div>
+                    <button class="logout-button" id="logoutBtn">
+                        🚪 Log ud
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="main-content">
-        <div class="welcome-section">
-            <h2 id="welcomeMessage">Velkommen tilbage!</h2>
-            <p>Vælg den app du vil arbejde med nedenfor</p>
+        <div class="main-content">
+            <div class="welcome-section">
+                <h2 id="welcomeMessage">Velkommen tilbage!</h2>
+                <p>Vælg den app du vil arbejde med nedenfor</p>
+            </div>
+
+            <div class="apps-grid">
+                <!-- Projektplanner App -->
+                <a href="projektplanner.html" class="app-card">
+                    <div class="app-icon">📊</div>
+                    <h3>Projektplanner</h3>
+                    <p>Planlæg og administrer projekter med opgaver, deadlines og milepæle.</p>
+                    <span class="app-badge badge-blue">Projekt Management</span>
+                    <div class="app-arrow">→</div>
+                </a>
+
+                <!-- Referat App -->
+                <a href="referat.html" class="app-card">
+                    <div class="app-icon">📝</div>
+                    <h3>Referat</h3>
+                    <p>Skriv og administrer mødereferater med deltagere og handlingspunkter.</p>
+                    <span class="app-badge badge-brown">Mødestyring</span>
+                    <div class="app-arrow">→</div>
+                </a>
+
+                <!-- Kundestatus App -->
+                <a href="kundestatus.html" class="app-card">
+                    <div class="app-icon">👥</div>
+                    <h3>Kundestatus</h3>
+                    <p>Hold styr på kunder, projekter og status-opdateringer med PDF eksport.</p>
+                    <span class="app-badge badge-green">Kunde Administration</span>
+                    <div class="app-arrow">→</div>
+                </a>
+            </div>
         </div>
 
-        <div class="apps-grid">
-            <!-- Projektplanner App -->
-            <a href="projektplanner.html" class="app-card">
-                <div class="app-icon">📊</div>
-                <h3>Projektplanner</h3>
-                <p>Planlæg og administrer projekter med opgaver, deadlines og milepæle.</p>
-                <span class="app-badge badge-blue">Projekt Management</span>
-                <div class="app-arrow">→</div>
-            </a>
-
-            <!-- Referat App -->
-            <a href="referat.html" class="app-card">
-                <div class="app-icon">📝</div>
-                <h3>Referat</h3>
-                <p>Skriv og administrer mødereferater med deltagere og handlingspunkter.</p>
-                <span class="app-badge badge-brown">Mødestyring</span>
-                <div class="app-arrow">→</div>
-            </a>
-
-            <!-- Kundestatus App -->
-            <a href="kundestatus.html" class="app-card">
-                <div class="app-icon">👥</div>
-                <h3>Kundestatus</h3>
-                <p>Hold styr på kunder, projekter og status-opdateringer med PDF eksport.</p>
-                <span class="app-badge badge-green">Kunde Administration</span>
-                <div class="app-arrow">→</div>
-            </a>
+        <div class="footer">
+            <p>SWITZEA ApS © 2025 | Firebase Test Environment</p>
         </div>
     </div>
 
-    <div class="footer">
-        <p>SWITZEA ApS © 2025 | Test Environment</p>
-    </div>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-    <script>
-        function checkAuth() {
-            const currentUser = localStorage.getItem('switzea_currentUser');
-            
-            if (!currentUser) {
-                window.location.href = 'index.html';
-                return null;
-            }
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQoq8Y4H-fY8XbkKa5nEloDYQA3jzPPkg",
+            authDomain: "switzea-test.firebaseapp.com",
+            projectId: "switzea-test",
+            storageBucket: "switzea-test.firebasestorage.app",
+            messagingSenderId: "1006466000903",
+            appId: "1:1006466000903:web:aad0adfb1ab1e5f852e2a2"
+        };
 
-            return JSON.parse(currentUser);
-        }
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-        window.addEventListener('DOMContentLoaded', function() {
-            const user = checkAuth();
-            
+        // Check authentication
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('userName').textContent = user.name;
+                // User is signed in
+                const email = user.email;
+                const displayName = user.displayName || email.split('@')[0];
                 
-                let roleText = '';
-                if (user.role === 'admin') roleText = '👑 Administrator';
-                else if (user.role === 'manager') roleText = '📊 Projekt Manager';
-                else if (user.role === 'user') roleText = '👤 Medarbejder';
+                // Determine role based on email
+                let role = '👤 Medarbejder';
+                if (email.includes('admin')) {
+                    role = '👑 Administrator';
+                } else if (email.includes('projekt')) {
+                    role = '📊 Projekt Manager';
+                }
                 
-                document.getElementById('userRole').textContent = roleText;
-                document.getElementById('welcomeMessage').textContent = `Velkommen tilbage, ${user.name}!`;
-            }
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            if (confirm('Er du sikker på at du vil logge ud?')) {
-                localStorage.removeItem('switzea_currentUser');
+                // Update UI
+                document.getElementById('userName').textContent = displayName;
+                document.getElementById('userRole').textContent = role;
+                document.getElementById('welcomeMessage').textContent = `Velkommen tilbage, ${displayName}!`;
+                
+                // Show dashboard
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+                
+            } else {
+                // No user is signed in - redirect to login
                 window.location.href = 'index.html';
             }
         });
 
-        document.addEventListener('keydown', function(e) {
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (confirm('Er du sikker på at du vil logge ud?')) {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Der opstod en fejl ved logout');
+                }
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
             if (e.altKey) {
                 if (e.key === '1') window.location.href = 'projektplanner.html';
                 if (e.key === '2') window.location.href = 'referat.html';
