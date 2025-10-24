@@ -616,7 +616,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBQoq8Y4H-fY8XbkKa5nEloDYQA3jzPPkg",
@@ -633,7 +633,7 @@
 
         window.firebaseAuth = auth;
         window.firebaseDb = db;
-        window.firebaseModules = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp };
+        window.firebaseModules = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy };
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -641,10 +641,8 @@
             } else {
                 window.currentUser = user;
                 console.log('User authenticated:', user.email);
-                // Initialize app after auth
-                if (typeof loadAllCustomers === 'function') {
-                    await loadAllCustomers();
-                }
+                // Load customers after auth
+                await loadCustomersFromFirestore();
             }
         });
 
@@ -831,7 +829,9 @@
             saveNewCustomer();
         });
 
-        function saveNewCustomer() {
+        async function saveNewCustomer() {
+            const { addDoc, collection } = window.firebaseModules;
+
             const id = Date.now();
             const customer = {
                 id: id,
@@ -841,12 +841,39 @@
                 phone: document.getElementById('phone').value,
                 project: document.getElementById('project').value,
                 status: document.getElementById('status').value,
-                followUpDate: document.getElementById('followUpDate').value,
-                lastContact: new Date().toISOString().split('T')[0],
-                statusTimeline: [],
+                startDate: document.getElementById('startDate').value,
+                deadline: document.getElementById('deadline').value,
+                statusUpdates: [],
                 createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
+                createdBy: window.currentUser.uid
             };
+
+            // Validation
+            if (!customer.customerName || !customer.project) {
+                alert('Udfyld venligst kundenavn og projektnavn');
+                return;
+            }
+
+            try {
+                // Save to Firestore
+                const docRef = await addDoc(collection(window.firebaseDb, 'customers'), customer);
+                console.log('Customer saved with ID:', docRef.id);
+
+                // Reload from Firestore
+                await loadCustomersFromFirestore();
+
+                // Close modal
+                closeModal();
+
+                // Clear form
+                document.getElementById('customerForm').reset();
+
+                alert('Kunde gemt!');
+            } catch (error) {
+                console.error('Error saving customer:', error);
+                alert('Kunne ikke gemme kunde: ' + error.message);
+            }
+        };
 
             customers.unshift(customer);
             saveCustomersLocal();
@@ -1091,7 +1118,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBQoq8Y4H-fY8XbkKa5nEloDYQA3jzPPkg",
@@ -1108,7 +1135,7 @@
 
         window.firebaseAuth = auth;
         window.firebaseDb = db;
-        window.firebaseModules = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp };
+        window.firebaseModules = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy };
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -1116,10 +1143,8 @@
             } else {
                 window.currentUser = user;
                 console.log('User authenticated:', user.email);
-                // Initialize app after auth
-                if (typeof loadAllCustomers === 'function') {
-                    await loadAllCustomers();
-                }
+                // Load customers after auth
+                await loadCustomersFromFirestore();
             }
         });
 
@@ -1262,8 +1287,58 @@
             renderStatusTimeline(customer);
         }
 
-        async function saveCustomerStatus(id) {
-            const customer = customers.find(function(c) { return c.id === id; });
+        async function saveCustomerStatus(customerId) {
+            const { updateDoc, doc } = window.firebaseModules;
+
+            const title = document.getElementById('statusTitle').value;
+            const description = document.getElementById('statusDescription').value;
+
+            if (!title || !description) {
+                alert('Udfyld både titel og beskrivelse');
+                return;
+            }
+
+            try {
+                // Find customer
+                const customer = allCustomersData.find(c => c.id == customerId);
+                if (!customer || !customer.firestoreId) {
+                    alert('Kunne ikke finde kunde');
+                    return;
+                }
+
+                // Add new status
+                const newStatus = {
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    title: title,
+                    description: description
+                };
+
+                const updatedStatuses = [...(customer.statusUpdates || []), newStatus];
+
+                // Update in Firestore
+                await updateDoc(doc(window.firebaseDb, 'customers', customer.firestoreId), {
+                    statusUpdates: updatedStatuses,
+                    updatedAt: new Date().toISOString()
+                });
+
+                console.log('Status saved for customer:', customer.firestoreId);
+
+                // Reload
+                await loadCustomersFromFirestore();
+
+                // Close form and clear
+                document.getElementById('statusForm').style.display = 'none';
+                document.getElementById('statusTitle').value = '';
+                document.getElementById('statusDescription').value = '';
+
+                // Re-open customer to show updated status
+                openCustomer(customerId);
+            } catch (error) {
+                console.error('Error saving status:', error);
+                alert('Kunne ikke gemme status: ' + error.message);
+            }
+        });
             if (!customer) return;
             
             customer.contactPerson = document.getElementById('contactPersonField').value;
@@ -1282,9 +1357,33 @@
         }
 
         async function deleteCustomer(customerId) {
-            await deleteCustomerFromFirestore(customerId);
-            if (!confirm('Er du sikker på at du vil slette denne kunde?')) return;
-            customers = customers.filter(function(c) { return c.id !== id; });
+            const { deleteDoc, doc } = window.firebaseModules;
+
+            if (!confirm('Er du sikker på at du vil slette denne kunde?')) {
+                return;
+            }
+
+            try {
+                // Find Firestore document ID
+                const customer = allCustomersData.find(c => c.id == customerId);
+                if (!customer || !customer.firestoreId) {
+                    alert('Kunne ikke finde kunde');
+                    return;
+                }
+
+                // Delete from Firestore
+                await deleteDoc(doc(window.firebaseDb, 'customers', customer.firestoreId));
+                console.log('Customer deleted:', customer.firestoreId);
+
+                // Reload from Firestore
+                await loadCustomersFromFirestore();
+
+                alert('Kunde slettet!');
+            } catch (error) {
+                console.error('Error deleting customer:', error);
+                alert('Kunne ikke slette kunde: ' + error.message);
+            }
+        });
             saveCustomersLocal();
             document.getElementById('customerContent').innerHTML = '<div class="empty-state"><h2>Kunde slettet</h2><p>Vælg en anden kunde eller opret en ny.</p></div>';
             currentCustomerId = null;
@@ -1440,108 +1539,45 @@
         });
     
         // ============================================================
-        // FIRESTORE DATA OPERATIONS
+        // FIRESTORE INTEGRATION
         // ============================================================
 
-        let allCustomers = [];
+        let allCustomersData = [];
 
-        // Load all customers from Firestore
-        async function loadAllCustomers() {
+        // Load customers from Firestore
+        async function loadCustomersFromFirestore() {
             const { getDocs, collection, query, orderBy } = window.firebaseModules;
 
             try {
-                const q = query(collection(window.firebaseDb, 'customers'), orderBy('updatedAt', 'desc'));
+                const q = query(collection(window.firebaseDb, 'customers'), orderBy('id', 'desc'));
                 const querySnapshot = await getDocs(q);
 
-                allCustomers = [];
-                querySnapshot.forEach((doc) => {
-                    allCustomers.push({
-                        id: doc.id,
-                        ...doc.data()
+                allCustomersData = [];
+                querySnapshot.forEach((docSnap) => {
+                    allCustomersData.push({
+                        firestoreId: docSnap.id,
+                        ...docSnap.data()
                     });
                 });
 
-                console.log('Loaded', allCustomers.length, 'customers from Firestore');
+                console.log('Loaded', allCustomersData.length, 'customers from Firestore');
                 renderCustomers();
-                return allCustomers;
             } catch (error) {
                 console.error('Error loading customers:', error);
-                alert('Kunne ikke hente kunder: ' + error.message);
-                return [];
+                allCustomersData = [];
+                renderCustomers();
             }
         }
 
-        // Save customer to Firestore
-        async function saveCustomerToFirestore(customerData) {
-            const { addDoc, collection } = window.firebaseModules;
-
-            try {
-                const docRef = await addDoc(collection(window.firebaseDb, 'customers'), {
-                    ...customerData,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    createdBy: window.currentUser.uid
-                });
-
-                console.log('Customer saved with ID:', docRef.id);
-                await loadAllCustomers();
-                return { success: true, id: docRef.id };
-            } catch (error) {
-                console.error('Error saving customer:', error);
-                alert('Kunne ikke gemme kunde: ' + error.message);
-                return { success: false, error: error.message };
-            }
-        }
-
-        // Update customer in Firestore
-        async function updateCustomerInFirestore(customerId, customerData) {
-            const { updateDoc, doc } = window.firebaseModules;
-
-            try {
-                const docRef = doc(window.firebaseDb, 'customers', customerId);
-                await updateDoc(docRef, {
-                    ...customerData,
-                    updatedAt: new Date().toISOString()
-                });
-
-                console.log('Customer updated:', customerId);
-                await loadAllCustomers();
-                return { success: true };
-            } catch (error) {
-                console.error('Error updating customer:', error);
-                alert('Kunne ikke opdatere kunde: ' + error.message);
-                return { success: false, error: error.message };
-            }
-        }
-
-        // Delete customer from Firestore
-        async function deleteCustomerFromFirestore(customerId) {
-            const { deleteDoc, doc } = window.firebaseModules;
-
-            if (!confirm('Er du sikker på at du vil slette denne kunde?')) {
-                return { success: false, cancelled: true };
-            }
-
-            try {
-                await deleteDoc(doc(window.firebaseDb, 'customers', customerId));
-                console.log('Customer deleted:', customerId);
-                await loadAllCustomers();
-                return { success: true };
-            } catch (error) {
-                console.error('Error deleting customer:', error);
-                alert('Kunne ikke slette kunde: ' + error.message);
-                return { success: false, error: error.message };
-            }
-        }
-
-        // DEPRECATED - Keep for backwards compatibility but use Firestore
+        // Save customers (deprecated - kept for compatibility)
         function saveCustomersLocal() {
-            console.warn('saveCustomersLocal is deprecated - data now saved to Firestore');
+            // No longer used - data saved to Firestore
+            console.log('saveCustomersLocal deprecated - using Firestore');
         }
 
+        // Load customers (returns Firestore data)
         function loadCustomersLocal() {
-            console.warn('loadCustomersLocal is deprecated - loading from Firestore instead');
-            return allCustomers;
+            return allCustomersData;
         }
         
         </script>
