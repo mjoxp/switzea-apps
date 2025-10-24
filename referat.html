@@ -543,6 +543,72 @@
                 }
             }
         }
+    
+        /* SWITZEA Navigation Bar */
+        .switzea-nav-bar {
+            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
+            color: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(44,95,125,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-back-btn, .nav-logout-btn {
+            background: #8B7355;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-back-btn:hover, .nav-logout-btn:hover {
+            background: #6B5845;
+            transform: translateY(-1px);
+        }
+
+        .nav-app-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-app-links a {
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .nav-app-links a:hover {
+            background: rgba(139, 115, 85, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-app-links {
+                order: -1;
+            }
+        }
+
     </style>
 <!-- Firebase SDK -->
     <script type="module">
@@ -588,6 +654,24 @@
     
 </head>
 <body>
+<!-- SWITZEA Navigation Bar -->
+    <div class="switzea-nav-bar">
+        <div class="nav-content">
+            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
+                ← Tilbage til Dashboard
+            </button>
+            <div class="nav-app-links">
+                <a href="projektplanner.html">📊 Projektplanner</a>
+                <a href="referat.html">📝 Referat</a>
+                <a href="kundestatus.html">👥 Kundestatus</a>
+            </div>
+            <button onclick="handleLogout()" class="nav-logout-btn">
+                🚪 Log ud
+            </button>
+        </div>
+    </div>
+
+    
     <div class="app">
         <!-- Left Sidebar -->
         <div class="sidebar">
@@ -1022,6 +1106,24 @@
     
 </head>
                 <body>
+<!-- SWITZEA Navigation Bar -->
+    <div class="switzea-nav-bar">
+        <div class="nav-content">
+            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
+                ← Tilbage til Dashboard
+            </button>
+            <div class="nav-app-links">
+                <a href="projektplanner.html">📊 Projektplanner</a>
+                <a href="referat.html">📝 Referat</a>
+                <a href="kundestatus.html">👥 Kundestatus</a>
+            </div>
+            <button onclick="handleLogout()" class="nav-logout-btn">
+                🚪 Log ud
+            </button>
+        </div>
+    </div>
+
+    
                     <div class="header">
                         <div class="logo">SWITZEA ApS</div>
                         <h1>${meeting.title}</h1>
@@ -1289,13 +1391,11 @@
         });
 
         function saveMeetingsLocal() {
-            // Firebase save handled in app
-            // Collection: 'switzea-referater', Data: meetings
+            localStorage.setItem('switzea-referater', JSON.stringify(meetings));
         }
 
         function loadMeetingsLocal() {
-            // Firebase load handled in app
-        // Collection: 'switzea-referater'
+            const saved = localStorage.getItem('switzea-referater');
             if (saved) {
                 try {
                     meetings = JSON.parse(saved);
