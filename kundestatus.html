@@ -611,72 +611,6 @@
             }
         }
 
-    
-        /* SWITZEA Navigation Bar */
-        .switzea-nav-bar {
-            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
-            color: white;
-            padding: 12px 20px;
-            box-shadow: 0 2px 8px rgba(44,95,125,0.2);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .nav-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-back-btn, .nav-logout-btn {
-            background: #8B7355;
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .nav-back-btn:hover, .nav-logout-btn:hover {
-            background: #6B5845;
-            transform: translateY(-1px);
-        }
-
-        .nav-app-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        .nav-app-links a {
-            color: white;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-
-        .nav-app-links a:hover {
-            background: rgba(139, 115, 85, 0.3);
-        }
-
-        @media (max-width: 768px) {
-            .nav-content {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .nav-app-links {
-                order: -1;
-            }
-        }
-
     </style>
 <!-- Firebase Integration -->
     <script type="module">
@@ -706,7 +640,7 @@
                 window.location.href = 'index.html';
             } else {
                 window.currentUser = user;
-                console.log('User authenticated:', user.email);
+                console.log('✅ User:', user.email);
                 if (typeof loadCustomersFromFirestore === 'function') {
                     await loadCustomersFromFirestore();
                 }
@@ -727,24 +661,6 @@
     
 </head>
 <body>
-<!-- SWITZEA Navigation Bar -->
-    <div class="switzea-nav-bar">
-        <div class="nav-content">
-            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
-                ← Tilbage til Dashboard
-            </button>
-            <div class="nav-app-links">
-                <a href="projektplanner.html">📊 Projektplanner</a>
-                <a href="referat.html">📝 Referat</a>
-                <a href="kundestatus.html">👥 Kundestatus</a>
-            </div>
-            <button onclick="handleLogout()" class="nav-logout-btn">
-                🚪 Log ud
-            </button>
-        </div>
-    </div>
-
-    
 <!-- SWITZEA Navigation Bar -->
     <div class="switzea-nav-bar">
         <div class="nav-content">
@@ -915,6 +831,7 @@
         });
 
         async function saveNewCustomer() {
+            console.log('💾 saveNewCustomer called');
             const { addDoc, collection } = window.firebaseModules;
 
             const id = Date.now();
@@ -926,28 +843,30 @@
                 phone: document.getElementById('phone').value,
                 project: document.getElementById('project').value,
                 status: document.getElementById('status').value,
-                startDate: document.getElementById('startDate').value,
-                deadline: document.getElementById('deadline').value,
+                startDate: document.getElementById('startDate').value || '',
+                deadline: document.getElementById('deadline').value || '',
                 statusUpdates: [],
                 createdAt: new Date().toISOString(),
                 createdBy: window.currentUser.uid
             };
 
             if (!customer.customerName || !customer.project) {
-                alert('Udfyld venligst kundenavn og projekt');
+                alert('❌ Udfyld kundenavn og projekt');
                 return;
             }
 
             try {
+                console.log('📤 Saving to Firestore...');
                 const docRef = await addDoc(collection(window.firebaseDb, 'customers'), customer);
-                console.log('Customer saved:', docRef.id);
+                console.log('✅ Saved! ID:', docRef.id);
 
                 await loadCustomersFromFirestore();
                 closeModal();
                 document.getElementById('customerForm').reset();
+                alert('✅ Kunde gemt!');
             } catch (error) {
-                console.error('Error:', error);
-                alert('Fejl: ' + error.message);
+                console.error('❌ Error:', error);
+                alert('❌ Fejl: ' + error.message);
             }
         };
 
@@ -1124,73 +1043,7 @@
                 '.info-value { color: #4B5563; font-size: 11pt; }' +
                 '.status-section { background: #FFF5F0; padding: 15pt; border-radius: 4pt; margin-bottom: 20pt; border-left: 4pt solid #E87461; page-break-inside: avoid; }' +
                 '.status-section h2 { color: #B33A2C; font-size: 16pt; margin: 0 0 15pt 0; font-weight: 600; page-break-after: avoid; }' +
-                '
-        /* SWITZEA Navigation Bar */
-        .switzea-nav-bar {
-            background: linear-gradient(135deg, #2C5F7D 0%, #3A7CA5 100%);
-            color: white;
-            padding: 12px 20px;
-            box-shadow: 0 2px 8px rgba(44,95,125,0.2);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .nav-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-back-btn, .nav-logout-btn {
-            background: #8B7355;
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .nav-back-btn:hover, .nav-logout-btn:hover {
-            background: #6B5845;
-            transform: translateY(-1px);
-        }
-
-        .nav-app-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        .nav-app-links a {
-            color: white;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-
-        .nav-app-links a:hover {
-            background: rgba(139, 115, 85, 0.3);
-        }
-
-        @media (max-width: 768px) {
-            .nav-content {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .nav-app-links {
-                order: -1;
-            }
-        }
-
-    </style><!-- Firebase Integration -->
+                '</style><!-- Firebase Integration -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -1218,7 +1071,7 @@
                 window.location.href = 'index.html';
             } else {
                 window.currentUser = user;
-                console.log('User authenticated:', user.email);
+                console.log('✅ User:', user.email);
                 if (typeof loadCustomersFromFirestore === 'function') {
                     await loadCustomersFromFirestore();
                 }
@@ -1238,24 +1091,6 @@
     </script>
     
 </head><body>
-<!-- SWITZEA Navigation Bar -->
-    <div class="switzea-nav-bar">
-        <div class="nav-content">
-            <button onclick="window.location.href='dashboard.html'" class="nav-back-btn">
-                ← Tilbage til Dashboard
-            </button>
-            <div class="nav-app-links">
-                <a href="projektplanner.html">📊 Projektplanner</a>
-                <a href="referat.html">📝 Referat</a>
-                <a href="kundestatus.html">👥 Kundestatus</a>
-            </div>
-            <button onclick="handleLogout()" class="nav-logout-btn">
-                🚪 Log ud
-            </button>
-        </div>
-    </div>
-
-    
 <!-- SWITZEA Navigation Bar -->
     <div class="switzea-nav-bar">
         <div class="nav-content">
@@ -1414,7 +1249,7 @@
                     updatedAt: new Date().toISOString()
                 });
 
-                console.log('Status saved');
+                console.log('✅ Status saved');
                 await loadCustomersFromFirestore();
 
                 document.getElementById('statusForm').style.display = 'none';
@@ -1423,8 +1258,8 @@
 
                 openCustomer(customerId);
             } catch (error) {
-                console.error('Error:', error);
-                alert('Fejl: ' + error.message);
+                console.error('❌ Error:', error);
+                alert('❌ Fejl: ' + error.message);
             }
         });
             if (!customer) return;
@@ -1459,12 +1294,12 @@
                 }
 
                 await deleteDoc(doc(window.firebaseDb, 'customers', customer.firestoreId));
-                console.log('Customer deleted');
-
+                console.log('✅ Customer deleted');
                 await loadCustomersFromFirestore();
+                alert('✅ Kunde slettet!');
             } catch (error) {
-                console.error('Error:', error);
-                alert('Fejl: ' + error.message);
+                console.error('❌ Error:', error);
+                alert('❌ Fejl: ' + error.message);
             }
         });
             saveCustomersLocal();
@@ -1631,7 +1466,7 @@
             return JSON.parse(currentUser);
         }
 
-        function handleLogout() {
+        function handleLogout_old() {
             if (confirm('Er du sikker på at du vil logge ud?')) {
                 localStorage.removeItem('switzea_currentUser');
                 window.location.href = 'index.html';
@@ -1646,17 +1481,16 @@
         
     
         // ============================================================
-        // FIRESTORE INTEGRATION
+        // FIRESTORE INTEGRATION  
         // ============================================================
 
         let firestoreCustomers = [];
 
-        // Load customers from Firestore
         async function loadCustomersFromFirestore() {
             const { getDocs, collection, query, orderBy } = window.firebaseModules;
 
             try {
-                console.log('Loading from Firestore...');
+                console.log('📥 Loading from Firestore...');
                 const q = query(collection(window.firebaseDb, 'customers'), orderBy('id', 'desc'));
                 const snapshot = await getDocs(q);
 
@@ -1668,25 +1502,22 @@
                     });
                 });
 
-                console.log('Loaded', firestoreCustomers.length, 'customers from Firestore');
+                console.log('✅ Loaded', firestoreCustomers.length, 'customers');
                 renderCustomers();
             } catch (error) {
-                console.error('Error loading:', error);
+                console.error('❌ Load error:', error);
                 firestoreCustomers = [];
                 renderCustomers();
             }
         }
 
-        // Override localStorage functions to use Firestore
-        const originalLoadCustomersLocal = loadCustomersLocal;
-        const originalSaveCustomersLocal = saveCustomersLocal;
-
+        // Override localStorage functions
         function loadCustomersLocal() {
             return firestoreCustomers;
         }
 
         function saveCustomersLocal() {
-            console.log('saveCustomersLocal deprecated - using Firestore');
+            console.log('saveCustomersLocal deprecated');
         }
         
         </script>
